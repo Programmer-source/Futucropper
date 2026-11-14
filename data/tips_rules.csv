@@ -1,0 +1,17 @@
+signal,tip,priority
+drought_red,irrigate_earlier,1
+drought_red,check_insurance,2
+drought_red,tolerant_varieties,3
+drought_yellow,irrigate_earlier,2
+drought_yellow,tolerant_varieties,4
+dry_soil,delay_fertiliser,2
+dry_spell,keep_cover,1
+dry_spell,no_burning,3
+heat30,water_cool_hours,1
+heat35,water_cool_hours,1
+frost,frost_protect,1
+heavy_rain,check_drainage,1
+el_nino_au,plan_dry_season,2
+normal,keep_monitoring,9
+dry_spell_next8d,keep_cover,1
+dry_spell_next8d,water_cool_hours,2

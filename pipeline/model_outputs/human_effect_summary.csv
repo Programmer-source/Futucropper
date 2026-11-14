@@ -1,0 +1,14 @@
+zone,phase,n,mean_residual,ci95_low,ci95_high,significant,valid_mean_residual
+AU_control,0_pre_war_2022,2,0.941,,,False,0.04
+AU_control,3_AU_all_2022-25,46,0.461,0.114,0.773,True,0.04
+AU_main,0_pre_war_2022,2,1.124,,,False,0.169
+AU_main,3_AU_all_2022-25,46,0.499,0.379,0.689,True,0.169
+UA_control,0_pre_war_2022,2,-0.443,,,False,0.525
+UA_control,1_war,16,0.367,-0.03,0.709,False,0.525
+UA_control,2_war+dam,30,-0.155,-0.599,0.164,False,0.525
+UA_main,0_pre_war_2022,2,-0.297,,,False,0.651
+UA_main,1_war,16,0.518,0.056,1.069,True,0.651
+UA_main,2_war+dam,30,-0.493,-0.908,-0.157,True,0.651
+UA_second,0_pre_war_2022,2,-0.661,,,False,0.534
+UA_second,1_war,16,0.243,-0.142,0.737,False,0.534
+UA_second,2_war+dam,30,-0.145,-0.435,0.091,False,0.534

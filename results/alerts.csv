@@ -1,0 +1,11 @@
+zone,period_start,period_end,type,value,unit,percentile,active,forecast_origin
+AU_control,2026-11-01,2026-11-08,dry_spell,4,days,20,False,
+AU_main,2026-11-01,2026-11-08,dry_spell,4,days,20,False,
+UA_control,2026-11-01,2026-11-08,dry_spell,8,days,30,False,
+UA_main,2026-11-01,2026-11-08,dry_spell,9,days,60,False,
+UA_second,2026-11-01,2026-11-08,dry_spell,8,days,70,False,
+AU_control,2026-11-01,2026-11-08,dry_spell_next8d,88,%,,True,2026-11-09
+AU_main,2026-11-01,2026-11-08,dry_spell_next8d,72,%,,True,2026-11-09
+UA_control,2026-11-01,2026-11-08,dry_spell_next8d,8,%,,False,2026-11-09
+UA_main,2026-11-01,2026-11-08,dry_spell_next8d,31,%,,False,2026-11-09
+UA_second,2026-11-01,2026-11-08,dry_spell_next8d,13,%,,False,2026-11-09

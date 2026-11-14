@@ -1,0 +1,13 @@
+variable,product,provider,url
+ndvi,"MODIS MOD13C2 v061 (monthly, 0.05°)",NASA LP DAAC,https://lpdaac.usgs.gov/products/mod13c2v061/
+precip,GPM IMERG V07 monthly (GPM_3IMERGM),NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGM_07/summary
+precip,"GPM IMERG V07 daily Final / Late (GPM_3IMERGDF, GPM_3IMERGDL)",NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDF_07/summary
+soil_moisture,"GLDAS Noah 2.1 monthly (GLDAS_NOAH025_M), 0–40 cm",NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GLDAS_NOAH025_M_2.1/summary
+evap,GLDAS Noah 2.1 monthly (GLDAS_NOAH025_M),NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GLDAS_NOAH025_M_2.1/summary
+vpd,"GLDAS Noah 2.1 (from air temperature, humidity and pressure)",NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GLDAS_NOAH025_M_2.1/summary
+temp,MERRA-2 monthly (M2TMNXSLV) and daily (M2SDNXSLV),NASA GMAO / GES DISC,https://disc.gsfc.nasa.gov/datasets/M2TMNXSLV_5.12.4/summary
+heat_days_30,MERRA-2 daily maximum temperature (M2SDNXSLV),NASA GMAO / GES DISC,https://disc.gsfc.nasa.gov/datasets/M2SDNXSLV_5.12.4/summary
+dry_spell_max,GPM IMERG V07 daily,NASA GES DISC,https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDF_07/summary
+oni,Niño-3.4 sea surface temperature anomaly,NOAA PSL,https://psl.noaa.gov/data/climateindices/list/
+ghg,"CO₂, CH₄, N₂O, SF₆ monthly",NOAA GML,https://gml.noaa.gov/ccgg/trends/
+yield,Cereal yield (AG.YLD.CREL.KG),World Bank,https://data.worldbank.org/indicator/AG.YLD.CREL.KG

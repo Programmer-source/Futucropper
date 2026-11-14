@@ -1,0 +1,51 @@
+zone,variable,season,slope_per_decade,ci_low,ci_high,p_value,p_value_fdr,significant,badge,years_to_significance,unit,label_team,n_years
+AU_control,ndvi,growing,0.0629,0.006,0.109,0.1019,0.2998,False,none,,index,— тренду немає,23
+AU_control,precip,growing,-0.7523,-12.734,12.549,0.9579,0.9774,False,none,16.0,mm/month,— тренду немає,23
+AU_control,soil_moisture,growing,1.5275,-11.238,16.033,0.9102,0.9774,False,none,21.0,kg/m2,— тренду немає,23
+AU_control,evap,growing,5.8619,-2.098,15.016,0.2147,0.4316,False,none,,mm/month,— тренду немає,23
+AU_control,temp,growing,0.4419,-0.027,0.893,0.0813,0.2998,False,possible,,degC,↑ слабкий (p<0.10),23
+AU_control,vpd,growing,0.1018,0.006,0.165,0.0394,0.2998,False,possible,,kPa,"↑ попередньо (p<0.05, без FDR)",23
+AU_control,rh,growing,-5.9543,-9.617,0.175,0.0572,0.2998,False,possible,,%,↓ слабкий (p<0.10),23
+AU_control,runoff,growing,0.4905,-0.067,1.128,0.1015,0.2998,False,none,,mm/month,— тренду немає,23
+AU_control,ozone,growing,0.6008,-3.623,7.028,0.7917,0.9425,False,none,,DU,— тренду немає,23
+AU_control,water_vapour,growing,0.4162,-0.167,1.211,0.1256,0.3488,False,none,,kg/m2,— тренду немає,23
+AU_main,ndvi,growing,0.0449,-0.01,0.1,0.1015,0.2998,False,none,,index,— тренду немає,23
+AU_main,precip,growing,1.3564,-7.998,11.11,0.7917,0.9425,False,none,26.0,mm/month,— тренду немає,23
+AU_main,soil_moisture,growing,-2.8628,-10.445,6.852,0.6345,0.8349,False,none,22.0,kg/m2,— тренду немає,23
+AU_main,evap,growing,2.3416,-1.876,9.335,0.3377,0.6031,False,none,7.0,mm/month,— тренду немає,23
+AU_main,temp,growing,0.275,-0.037,0.669,0.1759,0.3824,False,none,,degC,— тренду немає,23
+AU_main,vpd,growing,0.0797,-0.001,0.159,0.0627,0.2998,False,possible,,kPa,↑ слабкий (p<0.10),23
+AU_main,rh,growing,-4.9093,-8.241,0.32,0.0572,0.2998,False,possible,,%,↓ слабкий (p<0.10),23
+AU_main,runoff,growing,0.2044,-0.856,1.37,0.5612,0.7584,False,none,,mm/month,— тренду немає,23
+AU_main,ozone,growing,0.3869,-3.754,7.156,0.8327,0.9682,False,none,,DU,— тренду немає,23
+AU_main,water_vapour,growing,0.487,-0.175,1.228,0.1696,0.3824,False,none,,kg/m2,— тренду немає,23
+UA_control,ndvi,growing,-0.0147,-0.044,0.028,0.4986,0.6925,False,none,44.0,index,— тренду немає,23
+UA_control,precip,growing,-2.838,-11.569,5.55,0.3692,0.6031,False,none,,mm/month,— тренду немає,23
+UA_control,soil_moisture,growing,-8.6692,-15.023,-1.669,0.0231,0.2998,False,possible,,kg/m2,"↓ попередньо (p<0.05, без FDR)",23
+UA_control,evap,growing,-6.2266,-13.499,-0.152,0.0394,0.2998,False,possible,,mm/month,"↓ попередньо (p<0.05, без FDR)",23
+UA_control,temp,growing,0.3819,-0.248,1.261,0.2244,0.4316,False,none,,degC,— тренду немає,23
+UA_control,vpd,growing,0.0888,-0.033,0.218,0.3669,0.6031,False,none,,kPa,— тренду немає,23
+UA_control,rh,growing,-2.1467,-4.832,1.581,0.3669,0.6031,False,none,,%,— тренду немає,23
+UA_control,runoff,growing,-0.5485,-1.228,-0.066,0.0552,0.2998,False,possible,,mm/month,↓ слабкий (p<0.10),23
+UA_control,ozone,growing,-0.5299,-5.55,3.906,0.955,0.9774,False,none,22.0,DU,— тренду немає,23
+UA_control,water_vapour,growing,0.5703,-0.304,1.388,0.2244,0.4316,False,none,,kg/m2,— тренду немає,23
+UA_main,ndvi,growing,-0.0067,-0.037,0.035,0.7116,0.9123,False,none,,index,— тренду немає,23
+UA_main,precip,growing,-0.7592,-11.158,9.662,0.9159,0.9774,False,none,29.0,mm/month,— тренду немає,23
+UA_main,soil_moisture,growing,-8.3067,-16.116,-0.419,0.0447,0.2998,False,possible,,kg/m2,"↓ попередньо (p<0.05, без FDR)",23
+UA_main,evap,growing,-5.5863,-13.618,3.213,0.1538,0.3662,False,none,,mm/month,— тренду немає,23
+UA_main,temp,growing,0.552,-0.189,1.225,0.1538,0.3662,False,none,,degC,— тренду немає,23
+UA_main,vpd,growing,0.1095,0.011,0.238,0.1019,0.2998,False,none,,kPa,— тренду немає,23
+UA_main,rh,growing,-3.0097,-6.108,0.214,0.0813,0.2998,False,possible,,%,↓ слабкий (p<0.10),23
+UA_main,runoff,growing,-0.8745,-1.583,0.002,0.0507,0.2998,False,possible,,mm/month,↓ слабкий (p<0.10),23
+UA_main,ozone,growing,-1.0596,-5.578,4.387,1.0,1.0,False,none,31.0,DU,— тренду немає,23
+UA_main,water_vapour,growing,0.5479,-0.399,1.333,0.398,0.6031,False,none,,kg/m2,— тренду немає,23
+UA_second,ndvi,growing,-0.0058,-0.033,0.029,0.778,0.9425,False,none,44.0,index,— тренду немає,23
+UA_second,precip,growing,-1.9511,-12.125,9.716,0.955,0.9774,False,none,7.0,mm/month,— тренду немає,23
+UA_second,soil_moisture,growing,-7.5855,-14.111,0.201,0.0725,0.2998,False,possible,,kg/m2,↓ слабкий (p<0.10),23
+UA_second,evap,growing,-1.694,-8.2,5.273,0.4923,0.6925,False,none,,mm/month,— тренду немає,23
+UA_second,temp,growing,0.496,-0.163,1.299,0.1391,0.3662,False,none,,degC,— тренду немає,23
+UA_second,vpd,growing,0.071,-0.027,0.212,0.4635,0.6816,False,none,,kPa,— тренду немає,23
+UA_second,rh,growing,-2.0452,-5.825,1.279,0.3976,0.6031,False,none,,%,— тренду немає,23
+UA_second,runoff,growing,-1.8995,-3.123,-0.535,0.013,0.2998,False,possible,,mm/month,"↓ попередньо (p<0.05, без FDR)",23
+UA_second,ozone,growing,-1.0231,-5.43,4.041,0.955,0.9774,False,none,30.0,DU,— тренду немає,23
+UA_second,water_vapour,growing,0.5761,-0.401,1.271,0.3976,0.6031,False,none,,kg/m2,— тренду немає,23

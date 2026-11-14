@@ -1,0 +1,11 @@
+country,start,end,type,label_uk,label_en
+AU,2006-06-01,2007-12-31,drought,Посуха 2006–07 (кінець «Тисячолітньої посухи»),2006–07 drought (end of the Millennium Drought)
+AU,2010-09-01,2011-03-31,flood,Повені Ла-Нінья 2010–11,2010–11 La Niña floods
+AU,2017-06-01,2019-12-31,drought,Посуха 2017–19,2017–19 drought
+AU,2019-09-01,2020-02-29,fire,Пожежі «Чорного літа»,Black Summer bushfires
+AU,2020-09-01,2022-12-31,la_nina,Три роки Ла-Нінья (волого),Three La Niña years (wet)
+ALL,2015-03-01,2016-05-31,el_nino,Сильне Ель-Ніньйо 2015–16,Strong El Niño 2015–16
+ALL,2023-05-01,2024-04-30,el_nino,Ель-Ніньйо 2023–24,El Niño 2023–24
+UA,2020-03-01,2020-09-30,drought,Посуха 2020 на півдні,2020 drought in the south
+UA,2022-02-24,,war,Повномасштабне вторгнення,Full-scale invasion
+UA,2023-06-06,,dam,Підрив Каховської ГЕС,Kakhovka dam destroyed

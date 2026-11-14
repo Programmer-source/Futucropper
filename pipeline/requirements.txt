@@ -1,0 +1,7 @@
+numpy
+pandas>=2.0
+pyarrow>=14
+scikit-learn>=1.4
+scipy
+matplotlib
+openpyxl

@@ -1,0 +1,16 @@
+zone,country,horizon,model,rmse,rmse_persistence,rmse_climatology,class_accuracy,drought_hit_rate,coverage80,r2,n_test,light_method
+AU_control,AU,1,ensemble,0.761,1.119,1.13,0.979,,0.787,0.112,47,reg01+thresholds (probabilities: hgb)
+AU_main,AU,1,ensemble,0.736,1.142,1.219,0.936,,0.894,0.407,47,reg01+thresholds (probabilities: hgb)
+UA_control,UA,1,ensemble,0.879,1.487,1.177,0.66,0.3,0.745,0.441,47,reg01+thresholds (probabilities: hgb)
+UA_main,UA,1,ensemble,0.918,1.38,1.337,0.745,0.417,0.681,0.515,47,reg01+thresholds (probabilities: hgb)
+UA_second,UA,1,ensemble,0.64,0.907,0.872,0.702,0.6,0.872,0.453,47,reg01+thresholds (probabilities: hgb)
+AU_control,AU,3,et,0.944,1.157,1.09,0.711,,0.844,-0.425,45,hgb
+AU_main,AU,3,et,1.033,1.236,1.187,0.667,,0.844,-0.188,45,hgb
+UA_control,UA,3,et,1.064,1.833,1.202,0.556,0.1,0.778,0.215,45,hgb
+UA_main,UA,3,et,1.185,1.969,1.366,0.511,0.25,0.622,0.225,45,hgb
+UA_second,UA,3,et,0.759,1.043,0.883,0.689,0.6,0.889,0.254,45,hgb
+AU_control,AU,6,et,0.903,1.174,1.068,0.762,,0.857,-0.283,42,hgb
+AU_main,AU,6,et,1.016,1.2,1.172,0.833,,0.881,-0.117,42,hgb
+UA_control,UA,6,et,1.175,1.661,1.244,0.524,0.0,0.786,0.106,42,hgb
+UA_main,UA,6,et,1.346,1.9,1.412,0.476,0.083,0.619,0.057,42,hgb
+UA_second,UA,6,et,0.899,1.074,0.908,0.595,0.4,0.857,0.013,42,hgb

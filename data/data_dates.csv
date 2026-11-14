@@ -1,0 +1,7 @@
+variable,product,last_date,cadence
+ndvi,NASA MODIS MOD13C2,2025-12-31,monthly
+soil_moisture,NASA GLDAS Noah 2.1,2025-12-31,monthly
+precip,NASA GPM IMERG daily,2026-11-13,8-day
+temp,NASA MERRA-2 daily,2026-09-30,monthly
+vpd,NASA GLDAS Noah 2.1,2025-12-31,monthly
+oni,NOAA Niño-3.4,2025-12-31,monthly

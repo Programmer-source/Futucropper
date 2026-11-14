@@ -1,0 +1,9 @@
+country,metric,value,unit,definition
+UA,water_loss_effect_pct,-5.2,%,"Kakhovka dam: growing-season (Apr-Aug) gap to weather-only expectation, UA_main minus rainfed UA_control, after Jul 2023 minus war period Mar 2022-Jun 2023"
+AU,water_loss_effect_pct,7.4,%,"2018-19 drought: growing-season (Jun-Oct) gap, AU_main minus rainfed AU_control, 2018-19 minus 2003-2017 average"
+UA,hit_depth_pct,-12.5,%,Worst single growing-season month of the same difference after Jul 2023
+AU,hit_depth_pct,-8.9,%,Worst single growing-season month of the same difference in 2018-19
+UA,recovery_months,,months,Not recovered: the reservoir has not been restored (data to Dec 2025)
+AU,recovery_months,6.0,months,Months after Dec 2019 until the AU_main minus AU_control gap first returned to its 2003-2017 average
+UA,chain_lag_months,0.0,months,"Rain (3-month SPI) to field greenness, model team chain analysis"
+AU,chain_lag_months,1.0,months,"Rain (3-month SPI) to field greenness, model team chain analysis"

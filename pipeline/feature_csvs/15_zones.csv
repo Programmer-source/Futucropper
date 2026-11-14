@@ -1,0 +1,6 @@
+zone,country,type,lon_min,lat_min,lon_max,lat_max,label
+UA_main,ukraine,irrigated,33.3,46.2,35.3,47.0,Kakhovka irrigation system
+UA_second,ukraine,irrigated,33.5,47.4,34.8,47.9,South Dnipropetrovsk
+UA_control,ukraine,control,31.0,47.0,32.5,47.8,Rainfed steppe N Mykolaiv
+AU_main,australia,irrigated,145.0,-35.3,146.8,-34.0,Murrumbidgee irrigation areas
+AU_control,australia,control,147.0,-34.3,147.8,-33.7,Rainfed wheat belt Temora
