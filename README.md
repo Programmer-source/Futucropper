@@ -197,6 +197,13 @@ Open http://localhost:3000.
 
 ---
 
+## Links to our project presentation and vide
+
+Video: https://youtu.be/--8PsnAbSnU
+Presentation: https://drive.google.com/file/d/1p5slZeZ54cQDp3Zm0auud4MncI_-ButH/view?usp=sharing
+
+---
+
 ## Sources
 
 - NASA Earthdata: MODIS MOD13C2 · NASA GPM IMERG · NASA GES DISC GLDAS · NASA GMAO MERRA-2
