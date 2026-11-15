@@ -5,7 +5,9 @@ import { AIText, useAI } from "@/components/AIBox";
 import { post, useApi, Zone } from "@/lib/api";
 import { big, LIGHT_COLOR, num } from "@/lib/format";
 import { monthName, useT } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n";
 import { Msg } from "@/lib/llm";
+import { askAI, clean } from "@/lib/llm";
 import { useZone, useZoneName } from "@/lib/zone";
 
 const PlanMap = dynamic(() => import("@/components/maps").then((m) => m.PlanMap), { ssr: false });
@@ -96,11 +98,14 @@ export default function PlanPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const [stepsBody, setStepsBody] = useState<Record<string, unknown> | null>(null);
+  const steps = useSteps(stepsBody);
   async function calc(form: Form = f) {
     if (form.lat === null || form.lon === null) { setErr(t("p.need_place")); return; }
     setBusy(true); setErr(null);
     try {
       const body = { ...form, n_kg_ha: form.n_kg_ha === "" ? null : Number(form.n_kg_ha), fuel_l_ha: form.fuel_l_ha === "" ? null : Number(form.fuel_l_ha), lang };
+      setStepsBody(body);
       const r = await post<Result>("/api/plan", body);
       setRes(r);
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -213,7 +218,7 @@ export default function PlanPage() {
 
         <div ref={resultRef} className="scroll-mt-4">
           {!res && <div className="rounded-lg border border-dashed border-rule p-6 text-moss">{t("r.empty")}</div>}
-          {res && <ResultView r={res} onTry={tryTip} busy={busy} />}
+          {res && <ResultView r={res} onTry={tryTip} busy={busy} steps={steps} />}
         </div>
       </div>
     </div>
@@ -243,7 +248,7 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
   );
 }
 
-function ResultView({ r, onTry, busy }: { r: Result; onTry: (code: string) => void; busy: boolean }) {
+function ResultView({ r, onTry, busy, steps }: { r: Result; onTry: (code: string) => void; busy: boolean; steps?: StepsState }) {
   const { t, lang } = useT();
   const name = useZoneName();
   const tone = scoreTone(r.score);
@@ -298,6 +303,8 @@ function ResultView({ r, onTry, busy }: { r: Result; onTry: (code: string) => vo
         </div>
         <p className="text-xs text-moss mt-2">{t("r.best", { month: monthName(r.best_month, lang), score: r.best_score })}</p>
       </Card>
+
+      {steps?.data && <StepsCard s={steps} />}
 
       <Card title={t("r.ahead")}>
         {r.horizon.kind === "8d" && r.horizon.dry_spell_chance_pct !== undefined && <p>{t("r.h8d", { pct: r.horizon.dry_spell_chance_pct, date: r.horizon.from ?? "" })}</p>}
@@ -420,6 +427,179 @@ function Scenario({ r, yearTips, aiBusy }: { r: Result; yearTips: Record<number,
         <span className="font-semibold">{t("r.ai_year")}: </span>
         {yearTips[row.year] ?? (aiBusy ? t("ai.thinking") : "—")}
       </div>
+    </Card>
+  );
+}
+
+/* ---------- Step by step (new): numbers from /api/plan/steps at once; AI text via askAI, like the "AI analysis" card ---------- */
+type StepItem = { month: number; kind: "prepare" | "sow" | "establish" | "winter" | "frost" | "key" | "harvest"; values: Record<string, number | number[] | boolean | null> };
+type YearItem = { year: number; score: number; flag: "ok" | "watch" | "switch"; dry_key_chance: number | null; soil_mm_change: number | null;
+  temp_change_c: number | null; alternative: { crop: string; score: number } | null };
+type StepsData = { season: StepItem[]; years: YearItem[]; messages: Msg[] };
+type StepsState = { data: StepsData | null };
+const STEPS_AI_TIMEOUT_MS = 120000;
+const stepsAiCache = new Map<string, string>(); // successful answers only
+const MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** Fetches the steps (numbers + prompt) in parallel with /api/plan; never blocks the result. */
+function useSteps(body: Record<string, unknown> | null): StepsState {
+  const [s, setS] = useState<StepsState>({ data: null });
+  useEffect(() => {
+    if (!body) return;
+    let alive = true;
+    setS({ data: null });
+    post<StepsData>("/api/plan/steps", body).then((d) => alive && setS({ data: d })).catch(() => {});
+    return () => { alive = false; };
+  }, [body]);
+  return s;
+}
+
+const STEP_WORD = /^(?:step|крок|шаг|schritt|étape|etape|passo|fase)\s*\d*\s*[:.\-–—]?\s*/i;
+const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.,]/g, "");
+
+/** Tolerant parser: any language, any case, with or without STEP/YEAR words; month names in English or the user's language.
+ *  Step lines are matched by month (first free step with that month), else by order; year lines by a known year. */
+function parseSteps(text: string, steps: StepItem[], years: number[], lang: Lang) {
+  const names = (m: number) => [MONTHS_EN[m - 1], monthName(m, lang, "long"), monthName(m, lang, "short"), String(m)].map(norm);
+  const out = { steps: {} as Record<number, string>, years: {} as Record<number, string>, rest: [] as string[] };
+  let order = 0, found = 0;
+  for (const raw of text.split(/\n+/)) {
+    const line = raw.replace(/^[\s•*\-#]+/, "").replace(/\*\*/g, "").trim();
+    if (!line) continue;
+    const yr = /^(?:\D{0,12}?)(20\d\d)\b[^:]{0,30}[:\-–—]\s*(.+)$/.exec(line);
+    if (yr && years.includes(Number(yr[1]))) { out.years[Number(yr[1])] = yr[2]; found++; continue; }
+    const hadWord = STEP_WORD.test(line);
+    const rest = line.replace(STEP_WORD, "");
+    const head = /^([^:\-–—]{1,30})[:\-–—]\s*(.+)$/.exec(rest);
+    const token = norm((head ? head[1] : rest).split(/[\s(\[]/)[0] ?? "");
+    let idx = -1;
+    if (token.length >= 3) {
+      idx = steps.findIndex((st, k) => out.steps[k] === undefined && names(st.month).some((n) => {
+        const len = Math.min(4, token.length, n.length);
+        return len >= 3 && n.slice(0, len) === token.slice(0, len);
+      }));
+    }
+    if (idx < 0 && hadWord) { while (order < steps.length && out.steps[order] !== undefined) order++; idx = order < steps.length ? order : -1; }
+    if (idx >= 0) { out.steps[idx] = head ? head[2] : rest; found++; }
+    else out.rest.push(line); // never lose AI text: unmatched lines are shown under the card
+  }
+  return found ? out : null;
+}
+
+function StepsCard({ s }: { s: StepsState }) {
+  const { t, lang } = useT();
+  const { meta } = useZone();
+  const d = s.data!;
+  const key = JSON.stringify(d.messages);
+  const [ai, setAi] = useState<{ key: string; text: string | null; state: "loading" | "done" | "failed" }>({ key: "", text: null, state: "loading" });
+  useEffect(() => {
+    const hit = stepsAiCache.get(key);
+    if (hit) { setAi({ key, text: hit, state: "done" }); return; }
+    let alive = true;
+    setAi({ key, text: null, state: "loading" });
+    const timer = setTimeout(() => alive && setAi((x) => (x.key === key && x.state === "loading" ? { key, text: null, state: "failed" } : x)), STEPS_AI_TIMEOUT_MS);
+    const serverKey = !!meta?.llm;
+    const yearsList = d.years.map((y) => y.year);
+    // a cut-off answer (fewer than half the steps, or no years) gets one "continue" call; the parts are joined
+    const incomplete = (txt: string) => {
+      const p = parseSteps(txt, d.season, yearsList, lang);
+      const nSteps = p ? Object.keys(p.steps).length : 0, nYears = p ? Object.keys(p.years).length : 0;
+      return nSteps < Math.ceil(d.season.length / 2) || (yearsList.length > 0 && nYears === 0);
+    };
+    (async () => {
+      // queue AFTER "AI analysis": child effects run before the parent's, so wait a moment before calling askAI
+      await new Promise((r) => setTimeout(r, 300));
+      if (!alive) throw new Error("gone");
+      // free routes allow ~1 answer per 45 s per IP and "AI analysis" goes first: on failure wait once, then retry
+      const first = await askAI(d.messages, { serverKey }).catch(async () => {
+        await new Promise((r) => setTimeout(r, 20000));
+        if (!alive) throw new Error("gone");
+        return askAI(d.messages, { serverKey });
+      });
+      let text = clean(first);
+      if (text && incomplete(text)) {
+        if (alive) setAi({ key, text, state: "loading" });
+        const more = await askAI([...d.messages, { role: "assistant", content: text },
+          { role: "user", content: "Continue. Write only the missing STEP and YEAR lines, same format." }], { serverKey }).catch(() => "");
+        if (more) text = `${text}\n${clean(more)}`;
+      }
+      return text;
+    })()
+      .then((c) => { if (c) stepsAiCache.set(key, c); if (alive) setAi({ key, text: c || null, state: c ? "done" : "failed" }); })
+      .catch(() => alive && setAi({ key, text: null, state: "failed" }))
+      .finally(() => clearTimeout(timer));
+    return () => { alive = false; clearTimeout(timer); };
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  const parsed = useMemo(() => (ai.text ? parseSteps(ai.text, d.season, d.years.map((y) => y.year), lang) : null), [ai.text, d, lang]);
+  const months = (ms: number[]) => ms.map((m) => monthName(m, lang, "short")).join("–");
+  const pct = (v: unknown) => (v === null || v === undefined ? "—" : String(v));
+  const aiLine = (txt: string | undefined) => (txt ? <p className="text-sm mt-1 rounded-md bg-chalk px-2 py-1" data-step-ai>{txt}</p> : null);
+
+  function values(st: StepItem) {
+    const v = st.values;
+    switch (st.kind) {
+      case "prepare": return t("st.v.prepare", { total: big(v.seed_total_kg as number, 1, lang), rate: big(v.seed_rate_kg_ha as number, 1, lang) });
+      case "sow": {
+        const dep = v.depth_cm as number[];
+        return t("st.v.sow", { d1: dep[0], d2: dep[1], row: v.row_cm as number, score: v.score as number, dry: pct(v.dry_sowing_pct) });
+      }
+      case "establish": return t("st.v.establish", { pct: pct(v.rain_fail_pct) });
+      case "winter": case "frost": return v.frost_pct === null ? t("st.v.nofrost") : t("st.v.frost", { pct: pct(v.frost_pct) });
+      case "key": return t("st.v.key", { months: months(v.key_months as number[]), pct: pct(v.dry_key_pct), heat: num(v.heat_days as number | null, 1, false, lang) })
+        + (v.dry_spell_next8d_pct !== undefined ? ` · ${t("st.v.key8", { pct: pct(v.dry_spell_next8d_pct) })}` : "");
+      case "harvest": return v.harvest_t !== undefined && v.harvest_t !== null
+        ? t("st.v.harvest_t", { kgha: big(v.harvest_kg_ha as number, 0, lang), t: num(v.harvest_t as number, 1, false, lang), lo: num(v.harvest_low_t as number, 1, false, lang), hi: num(v.harvest_high_t as number, 1, false, lang) })
+        : "";
+    }
+  }
+
+  return (
+    <Card title={t("st.title")}>
+      {ai.state === "loading" && (
+        <p className="text-moss text-sm flex items-center gap-2 mb-3" data-step-ai-state="loading">
+          <span className="inline-block w-2 h-2 rounded-full bg-water animate-pulse" />{t("st.ai_writing")}
+        </p>
+      )}
+      {ai.state === "failed" && <p className="text-moss text-sm mb-3" data-step-ai-state="failed">{t("st.ai_unavailable")}</p>}
+      <ol className="relative border-l-2 border-rule ml-2">
+        {d.season.map((st, k) => (
+          <li key={`${st.kind}-${k}`} className="ml-4 mb-4 last:mb-0">
+            <span className="absolute -left-[7px] mt-1.5 w-3 h-3 rounded-full bg-canopy border-2 border-panel" aria-hidden />
+            <p className="text-sm">
+              <b className="capitalize">{st.kind === "harvest" ? months(st.values.typical_months as number[]) : monthName(st.month, lang)}</b>
+              {" · "}<span className="font-semibold">{t(`st.k.${st.kind}`)}</span>
+              {st.kind === "harvest" && <span className="ml-2 text-xs px-2 py-0.5 rounded-full border border-rule text-moss">{t("st.typical")}</span>}
+            </p>
+            {values(st) && <p className="text-sm text-moss tabular">{values(st)}</p>}
+            {aiLine(parsed?.steps[k])}
+          </li>
+        ))}
+      </ol>
+
+      {d.years.length > 0 && (
+        <>
+          <p className="mt-5 text-sm font-semibold">{t("st.years")}</p>
+          <ul className="mt-2 space-y-2">
+            {d.years.map((y) => {
+              const tone = y.flag === "ok" ? "green" : y.flag === "watch" ? "yellow" : "red";
+              return (
+                <li key={y.year} className="text-sm">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full inline-block" style={{ background: LIGHT_COLOR[tone] }} aria-hidden />
+                    <b className="tabular">{y.year}</b> · <span className="tabular">{y.score}/100</span> ·{" "}
+                    {y.flag === "switch" && y.alternative ? t("st.flag.switch", { alt: `${t(`crop.${y.alternative.crop}`)} (${y.alternative.score}/100)` }) : t(`st.flag.${y.flag}`)}
+                  </span>
+                  {aiLine(parsed?.years[y.year])}
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-2 text-xs text-moss">{t("st.years_note")}</p>
+        </>
+      )}
+      {ai.state === "done" && ai.text && !parsed && <p className="mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-whole>{ai.text}</p>}
+      {ai.state === "done" && parsed && parsed.rest.length > 0 && <p className="mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-rest>{parsed.rest.join("\n")}</p>}
+      <p className="mt-3 text-xs text-moss">{t("st.note")}</p>
     </Card>
   );
 }

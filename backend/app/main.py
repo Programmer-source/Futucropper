@@ -13,7 +13,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from . import advisor, assistant, future, llm, logic, planner, store
+from . import advisor, assistant, future, llm, logic, planner, steps, store
 
 app = FastAPI(title="Futucropper API", version="0.5.0")
 app.add_middleware(GZipMiddleware, minimum_size=2000)
@@ -240,6 +240,12 @@ def plan(p: PlanIn):
         raise HTTPException(404, "No data for this place")
     res["messages"] = planner.plan_messages(res, p.notes[:1500], p.lang)
     return res
+
+
+@app.post("/api/plan/steps")
+def plan_steps(p: PlanIn):
+    """Same body as /api/plan; returns the steps, the years and the LLM prompt (the browser runs it with askAI)."""
+    return steps.build(p.model_dump(), lambda: plan(p))
 
 
 @app.get("/api/spot")
