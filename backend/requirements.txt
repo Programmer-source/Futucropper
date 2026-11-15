@@ -3,6 +3,7 @@ uvicorn[standard]>=0.29
 pandas>=2.0
 pyarrow>=14
 httpx>=0.27
+python-dotenv>=1.0
 # only for the mock generator
 numpy
 scipy

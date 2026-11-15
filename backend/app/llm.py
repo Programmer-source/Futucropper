@@ -16,6 +16,20 @@ def _wait_seconds(text: str) -> int:
     return min(50, int(m.group(1)) + 1) if m else 20
 
 
+def _openrouter(messages):
+    key = os.environ.get("OPENROUTER_API_KEY")
+    if not key:
+        return None
+    r = httpx.post("https://openrouter.ai/api/v1/chat/completions", timeout=90,
+                   headers={"Authorization": f"Bearer {key}", "HTTP-Referer": "http://localhost:3000",
+                            "X-Title": "Follow the Gas"},
+                   json={"model": os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free"),
+                         "messages": messages, "max_tokens": 900, "temperature": 0.3})
+    r.raise_for_status()
+    c = r.json()["choices"][0]["message"]["content"]
+    return c.strip() if isinstance(c, str) else None
+
+
 def _claude(messages):
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
@@ -54,7 +68,7 @@ def _poll_get(messages):
 
 def chat(messages):
     errors = []
-    for name, fn in (("claude", _claude), ("pollinations", _poll_post), ("pollinations-get", _poll_get)):
+    for name, fn in (("openrouter", _openrouter), ("claude", _claude), ("pollinations", _poll_post), ("pollinations-get", _poll_get)):
         try:
             text = fn(messages)
             if text:

@@ -2,6 +2,10 @@
 import io
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,8 +43,9 @@ def meta():
         "years": [int(s["date"].dt.year.min()), int(s["date"].dt.year.max())] if s is not None else None,
         "data_dates": store.records(store.load("data_dates")),
         "thresholds": {"z_yellow": logic.Z_YELLOW, "z_red": logic.Z_RED},
-        "llm": bool(os.environ.get("ANTHROPIC_API_KEY")),
-        "llm_provider": "claude" if os.environ.get("ANTHROPIC_API_KEY") else "browser",
+        "llm": bool(os.environ.get("OPENROUTER_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")),
+        "llm_provider": ("openrouter" if os.environ.get("OPENROUTER_API_KEY")
+                         else "claude" if os.environ.get("ANTHROPIC_API_KEY") else "browser"),
     }
 
 
