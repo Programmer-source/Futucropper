@@ -1,230 +1,195 @@
 # Futucropper
 
-Futucropper is a drought watch for irrigated farmland. We built it for two places: the Kakhovka irrigation area in southern Ukraine and the Murrumbidgee irrigation area in Australia.
+**Where and when to farm, from NASA satellites.**
+NASA Space Apps Challenge 2026 · *Be An Earth System Trend Detective!*
 
-For one zone at a time, it answers three questions in plain language:
+Futucropper is a free web app (with an Android version) that takes 23 years of NASA satellite data (2003–2025) and turns it into simple farming answers: where the land is good, when to sow, how risky a plan is, and how much greenhouse gas it produces.
 
-1. How are the fields doing compared with a normal year for this month?
-2. Is drought likely in the next 1–3 months?
-3. Why? Is it the weather, a long-term trend, El Niño or the NAO, or the lost irrigation water?
+We built it around two places with very different stories: southern Ukraine around the destroyed Kakhovka dam and some other southern regions, and the Murrumbidgee irrigation area in Australia.
 
-All numbers come from public NASA and NOAA data: monthly series since 2003, averaged over each zone.
+---
 
-![Fields now page](docs/screenshot-fields-now.png)
+## Goal
 
-> **Current state:** the app works end to end, but it still runs on **generated demo data**. The files in `data/` and `results/` have the final formats, and every page shows a "Demo data" banner until the real pipeline output replaces them. The real Ukraine series are collected; the Australia series, NDVI and the model are not finished yet.
+We wanted to answer one question:
 
-## Why we made it
+> Can NASA Earth observations help a farmer pick a less risky crop plan and see lower-emission options, without hiding uncertainty or pretending satellites measure profit or emissions directly?
 
-In June 2023 the Kakhovka dam was destroyed and the irrigation canals in the south of Ukraine went dry. Since then, every bad field has the same question attached to it: is this the drought, the war, or the missing water? Satellite field apps show *that* a field is stressed. They don't say which of these is the cause.
+The idea is simple. Before buying seed, fertiliser or fuel, a farmer should be able to compare a risky plan with a safer one, see *why* it is risky, and check what a change in practice does to emissions.
 
-We wanted a tool that keeps those causes apart. The Murrumbidgee is in the project because Australian irrigators had their water cut during the Millennium Drought, and that region has 20 years of records on what happened next.
+---
 
-## What we found so far
+## The problem
 
-This comes from our first pass over the southern Ukraine data, 2003–2025 (MERRA-2, GPM IMERG, GLDAS):
+Because of different ecological factors, the crops can grow badly. So the farmers have to plan their crops years ahead, but predicting is almost impossible for humans and requires so much time to analyze different factors.
 
-- Air temperature rises by about **+0.9 °C per decade**.
-- Winter snow water fell by about **72%**.
-- Rainfall shows **no clear trend**. The water is not falling less, it is evaporating faster.
-- Root-zone soil moisture (10–40 cm) is down about **15%**.
-- For Ukraine, the **North Atlantic Oscillation** explains much more of the year-to-year swings than El Niño. El Niño was not significant here, but it is for Australia.
+The data already exists. Farmers just can't use it, because it is not systematized and scattered all across the internet.
 
-These numbers will move a little once the cropland mask and the final trend tests are in. The method is described below.
+To plan one field today, a farmer has to check a satellite map for greenness, a weather service for rain, an agronomy guide for sowing dates and a separate calculator for emissions. Most farmers don't have the time or the software for that.
+
+Our two regions show why this matters:
+
+- **Australia, drought and limited water.** At the end of the 2018–19 drought, Murrumbidgee general-security water allocation was only **7%**. Water delivered to rice dropped from **220,423 ML** (2017–18) to **37,171 ML** (2018–19).
+- **Ukraine, lost irrigation.** The Kakhovka dam was destroyed on **6 June 2023**. A Government of Ukraine / UN assessment found about **243,600 ha** of irrigated land expected to lose yield without its old water supply. Here good weather can't fix the problem, because the water network itself is gone.
+
+On top of that, farming adds to the problem: nitrogen fertiliser, diesel and flooded rice all release greenhouse gases that warm the climate and make droughts more likely.
+
+---
+
+## The solution
+
+One app, three main screens, five languages (English, Ukrainian, German, French, Italian).
+
+**Map.** Pick a country and a crop culture. The map colours every 5 km cell by how well and how steadily it grew in that crop's months. Each study zone shows its best sowing month. Click anywhere to see the facts for that spot, ask the AI about it, or plan a field there.
+
+**Plan.** Enter your place, crop, sowing month, soil, irrigation, field size and a few optional details, then press *Calculate*. You get:
+- a safety score from 0 to 100 with the main reasons (dry soil at sowing, failed rain, dry key months, heat, frost)
+- a score for every month, so you can see if another month is better
+- a step-by-step season guide for beginners
+- seed amount, rows and depth for your field
+- an estimate of the field's greenhouse gases, with "Try it" buttons (less nitrogen, no-till, draining rice) that recalculate the number
+- an outlook: dry-spell chance for the next 8 days, a 1–3 month forecast, or a scenario up to 10 years
+
+**See the Future.** Press play and watch the land change season by season, from winter 2003 to autumn 2035. Past seasons are real satellite data, the next months come from our model, and 2026–2035 is clearly marked as a scenario "if the 2003–2025 trend continues". The AI writes a short note on what changed.
+
+**Science.** Detailed pages for judges and researchers: trends, how drought spreads from rain to soil to plants, Ukraine vs Australia, model accuracy and the "what weather alone would predict" analysis.
+
+---
 
 ## How it works
 
-```
-NASA / NOAA downloads → zone averages → statistics and model → files in data/ and results/
-                                                                         │
-                                                       FastAPI reads them (no math)
-                                                                         │
-                                                          Next.js site, UA / EN
-```
-
-We made one rule early on: **the API never calculates anything.** The pipeline writes files, and the API only reads, filters and combines them. If a number on the screen looks wrong, you can find the exact file and row it came from. It also let the people working on the statistics and the people working on the site work at the same time without blocking each other. The shared file formats are in [CONTRACTS.md](CONTRACTS.md).
-
 ### Data
+| Source | What we use it for |
+|---|---|
+| NASA MODIS MOD13C2 | field greenness (NDVI) |
+| NASA GPM IMERG V07 | rain and dry spells |
+| NASA GLDAS Noah 2.1 | soil moisture and evaporation |
+| NASA MERRA-2 | temperature, heat and frost days |
+| NOAA GML / NOAA PSL | CO₂ and El Niño index |
+| World Bank | national cereal yields |
+| IPCC 2019 Refinement, AR6 | emission factors and warming potentials |
 
-| What | Product | From |
-|---|---|---|
-| Rainfall | GPM IMERG v07, monthly | NASA GES DISC |
-| Temperature, air dryness | MERRA-2 | NASA GMAO |
-| Soil moisture, evaporation, snow | GLDAS Noah 2.1 | NASA GES DISC |
-| Field greenness (NDVI) | MODIS MOD13A3 v061 | NASA LP DAAC, via AppEEARS |
-| Ground water storage | GRACE / GRACE-FO | NASA JPL |
-| El Niño (ONI), NAO | indices | NOAA CPC |
+### Method, in plain words
+1. Every month is compared with the same month in 2003–2021, so "dry" means dry for *that* place and season.
+2. Trends are tested with Mann–Kendall and Sen's slope, with a correction for testing many things at once.
+3. Forecast models (ridge, gradient boosting, extra trees) are trained on old years and tested only on 2022–2025. The 6-month forecast didn't beat a simple guess, so we hide it.
+4. A weather-only model predicts how green the fields *should* be. The gap between that and what the satellite saw shows effects the weather doesn't explain, like lost irrigation.
+5. Emissions use IPCC Tier 1 factors (nitrogen N₂O, urea CO₂, diesel, rice methane).
+6. The AI only explains numbers the app already computed. It never makes up its own.
 
-Most of the series were pulled through NASA Giovanni. NDVI is not available in Giovanni, so it goes through AppEEARS.
+### Tech
+- **Backend:** Python, FastAPI, pandas. Deployed on Render.
+- **Frontend:** Next.js (React), Tailwind, Leaflet maps, Recharts. Deployed on Vercel.
+- **AI:** OpenRouter through the backend, with a free model as a backup.
+- **Android:** a separate build with offline mode that keeps saved data and plans.
 
-Zones: three in Ukraine (the main Kakhovka irrigated area, southern Dnipropetrovsk, and a rainfed control in Mykolaiv) and two in Australia (Murrumbidgee, and a rainfed control near Temora). The control zones never had canal water. If our method finds a "water loss" effect there, the method is wrong.
+---
 
-### Statistics
+## What we found
 
-- **Anomalies.** Each month is compared with the same calendar month in 2003–2021, so July is compared with other Julys. Otherwise the seasons hide everything else.
-- **Trends.** We use Sen's slope with the modified Mann–Kendall test (Hamed–Rao), because monthly climate data is autocorrelated and the plain test gives too many false trends. We test many variables at once, so the p-values go through Benjamini–Hochberg correction.
-- **Labels.** "Confirmed" means it passes after the correction. "Possible" means p < 0.2 before the correction. For weak trends we also show how many more years of data are needed (Weatherhead et al., 1998).
-- **Expected vs actual.** A model trained on weather only, before June 2023, predicts what NDVI should be afterwards. The gap between that and the satellite reading is the part the weather doesn't explain.
-- **Forecast.** 1, 3 and 6 months ahead, with an 80% range. We check it on years it hasn't seen, against two simple baselines: "same as now" and "normal for the month". The 6-month forecast is hidden unless it beats both.
-- **Traffic light.** One rule everywhere: NDVI z-score above −0.5 is green, −1 to −0.5 is yellow, below −1 is red.
+These are our own results. They still need someone else to repeat them.
 
-## Running it locally
+- **Kakhovka:** after June 2023, fields fell **−0.49** (standard score) below rainfed control areas, more than the weather explains (95% CI −0.86 to −0.25).
+- **Murrumbidgee:** in the 2018–19 drought, the irrigated zone did **+7.4%** better than its rainfed neighbour.
+- **Forecasts:** the 1-month forecast error is **0.62** vs **0.92** for "assume a normal year".
+- **Soil:** soil moisture in southern Ukraine is going down by about 8 kg/m² per decade. This is **not** statistically confirmed yet, and the app says so.
 
-You need Python 3.11+ and Node.js 20+.
+---
+
+## What the numbers do and don't mean
+
+We try hard not to overclaim.
+
+- **82/100 is a comparison score**, not an 82% chance of a good harvest.
+- **5 km cells are a display grid.** They are not exact field borders.
+- **Emissions are estimates** from IPCC factors, not measurements from a real farm.
+- **2026–2035 is a scenario**, not a forecast. Only the next 1–3 months are forecasts.
+- **Seed rates and sowing windows are typical values.** Local agronomy guides and advisers should always have the final word.
+
+---
+
+## Similar apps, and why use ours
+
+| | Futucropper | EOSDA Crop Monitoring | OneSoil | Cool Farm Tool | GEOGLAM / FAO ASIS |
+|---|---|---|---|---|---|
+| 23 years of history per location | yes | partial | partial | no | regional |
+| Best sowing month and risk score for a crop | yes | no | no | no | no |
+| Reasons behind the risk | yes | partial | no | no | regional |
+| Emissions next to the crop plan | yes | no | no | yes | no |
+| Emissions "what if" changes | yes | no | no | yes | no |
+| 1–3 month outlook | yes | partial | no | no | yes |
+| Separates weather from lost irrigation | yes | no | no | no | in reports |
+| Plain-language AI explanation | yes | no | no | no | no |
+| Live field imagery | monthly | yes | yes | no | regional |
+| Exact field borders | no | yes | yes | no | no |
+| Free | yes | paid plans | free basic | free for farmers | yes |
+
+*This is our own comparison of the tools, not a full market audit. Check other products' websites for their current features.*
+
+**Why choose Futucropper?** Other tools are better at watching a field right now and drawing exact borders. Futucropper does something different: it puts the long history, a concrete crop-and-month plan, its emissions and a plain explanation on one page, for free, in five languages. A farmer gets a decision instead of four separate tools.
+
+---
+
+## Project files
+
+| Folder or file | What it does |
+|---|---|
+| `README.md` | Overview and how to run the app |
+| `CONTRACTS.md` | Exact names and formats of every data file the pipeline writes and the app reads |
+| **backend/app/** | |
+| `main.py` | The web server and all `/api/...` endpoints |
+| `store.py` | Reads data files, with caching |
+| `logic.py` | Prepares data for each screen; drought traffic-light rules |
+| `advisor.py` | Risk for each sowing month: dry soil, failed rain, heat, frost |
+| `planner.py` | The Plan calculation: score, seed, harvest, soil water, emissions, scenario, AI prompts |
+| `steps.py` | The step-by-step season guide |
+| `future.py` | See the Future: seasons, forecasts, scenario, "What changed" |
+| `assistant.py` | Prompt for the Science assistant |
+| `llm.py` | Calls the AI: OpenRouter first, then the free backup |
+| `tests/` | Checks that the endpoints return correct numbers |
+| **frontend/src/** | |
+| `app/page.tsx` | Map tab |
+| `app/plan/page.tsx` | Plan tab with all result cards |
+| `app/future/page.tsx` | See the Future tab |
+| `app/science/…` | Science pages (now, trends, chain, expected, compare, dashboard, assistant, expert, roadmap) |
+| `components/` | Header, maps, loader, intro, flags, theme switch, AI box, charts |
+| `lib/` | Backend calls, AI calls, translations, formatting, map images |
+| `i18n/` | Texts in five languages |
+| **data/** | Monthly NASA series per zone, zone borders, events, sources |
+| **results/** | Precomputed forecasts, trends, alerts, expected vs actual, map grids, scenario cells |
+| **pipeline/** | How the data and results were made: input tables, the model notebook, export and map-building scripts |
+| **mobile-build/** | The Android app with offline mode |
+
+Secrets (the AI key) live only in `backend/.env` on the developer's computer and in Render's settings. They are never in git.
+
+---
+
+## How to RUN
 
 ```bash
 # backend
 cd backend
 python -m pip install -r requirements.txt
-python mock/make_mock.py                    # demo data; skip once real files exist
 python -m uvicorn app.main:app --reload --port 8000
-```
 
-```bash
 # frontend (second terminal)
 cd frontend
 npm install
-cp .env.example .env.local                  # Windows: copy .env.example .env.local
+copy .env.example .env.local   # macOS/Linux: cp
 npm run dev
 ```
 
-Open http://localhost:3000. The interface is in Ukrainian by default; add `?lang=en` for English. The API docs are at http://localhost:8000/docs.
+Open http://localhost:3000.
 
-Tests: `cd backend && python -m pytest -q`
+---
 
-On Windows, if `uvicorn` or `streamlit` is "not recognized", run them as `python -m uvicorn ...`. The scripts folder is often not on PATH.
+## Sources
 
-### Settings
+- NASA Earthdata: MODIS MOD13C2 · NASA GPM IMERG · NASA GES DISC GLDAS · NASA GMAO MERRA-2
+- NOAA Global Monitoring Laboratory · NOAA PSL climate indices · World Bank cereal yield
+- IPCC (2019) Refinement to the 2006 Guidelines, Vol. 4 · IPCC AR6 WG1
+- NSW DPI 2018–19 water conditions · Murrumbidgee Irrigation Annual Compliance Report 2018–19 · NSW Water allocations
+- Government of Ukraine & UN, Kakhovka Dam Post-Disaster Needs Assessment (2023) · World Bank Kakhovka impact analysis
+- NSW DPI and GRDC crop guides (sowing windows and seed rates)
 
-| Variable | Default | What it does |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Where the frontend looks for the API |
-| `FTG_DATA_ROOT` | repo root | Folder with `data/` and `results/` (the prefix is left over from the old name, Follow the Gas) |
-| `CORS_ORIGINS` | `*` | Allowed frontend addresses, comma-separated |
-| `ANTHROPIC_API_KEY` | not set | Turns on the AI assistant. Without it, the assistant answers from a template built from the same numbers |
-| `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model used by the assistant |
-
-The assistant only gets the zone's computed results as context, not the open internet, and it has to cite the field behind each claim, for example `[trends temp]`.
-
-### Main endpoints
-
-| Endpoint | Returns |
-|---|---|
-| `GET /api/zones/{zone}/now` | Traffic light, forecast, "why", tips, recent weather alerts |
-| `GET /api/trends?zone=` | Trend table with corrected p-values |
-| `GET /api/zones/{zone}/expected` | Expected vs actual NDVI |
-| `GET /api/chain` | Lags between heat, rain, soil and NDVI |
-| `GET /api/compare` | Ukraine vs Australia |
-| `POST /api/assistant` | An answer to a question about a zone |
-| `GET /api/download/{name}.csv` | Any result file as CSV |
-
-The full list is at `/docs`. If a result file is missing, the endpoint returns an empty result and the page says "not published yet". It doesn't crash.
-
-## What each file does
-
-### Top level
-
-| File / folder | What it is |
-|---|---|
-| `README.md` | This file |
-| `CONTRACTS.md` | The agreed formats of every data and result file: columns, units, fixed zone and variable names. The pipeline and the app both follow it. Read it before you add or rename a column |
-| `analysis.py` | Statistics for the real data: anomalies, Mann–Kendall trend test with Sen's slope, years until a trend becomes certain, lag correlations between variables |
-| `regions.py` | List of variables (name, unit, NASA source) and regions. Add a region here once its CSV is in `data/` |
-| `.gitignore` | Keeps `node_modules`, build folders, caches and `.env` files out of git |
-| `docs/` | Screenshots used in this README |
-
-### `backend/`: the API (Python, FastAPI)
-
-| File | What it does |
-|---|---|
-| `requirements.txt` | Python packages to install |
-| `app/main.py` | All API routes (`/api/...`), CORS settings, CSV downloads. Start point for uvicorn |
-| `app/store.py` | Reads the files from `data/` and `results/`. Caches them until a file changes. A missing file returns nothing instead of crashing |
-| `app/logic.py` | Turns the result files into what each page needs: traffic light, "why" chain, tips, Ukraine vs Australia comparison. The drought thresholds (−0.5 and −1) live **only here** |
-| `app/assistant.py` | The AI assistant. Sends the zone's computed numbers to the Claude API and asks it to cite the field behind each claim. Without an API key it returns "offline" and the site shows a template answer |
-| `app/__init__.py` | Empty; marks `app` as a Python package |
-| `mock/make_mock.py` | Writes invented demo data in the final formats, so the app can be built before real results exist. Every row it writes is marked `source = MOCK`, which turns on the "Demo data" banner |
-| `tests/test_api.py` | Checks that every endpoint answers and that missing files don't crash it. Run with `python -m pytest -q` |
-
-### `frontend/`: the website (Next.js, TypeScript)
-
-| File | What it does |
-|---|---|
-| `package.json`, `package-lock.json` | JavaScript packages and the `npm run dev` / `npm run build` commands. Run npm commands **inside `frontend/`** |
-| `.env.example` | Template for `.env.local`: the backend address (`NEXT_PUBLIC_API_URL`) |
-| `next.config.mjs`, `postcss.config.mjs`, `tsconfig.json`, `next-env.d.ts` | Settings for Next.js, CSS and TypeScript. Rarely need changes |
-| `src/app/layout.tsx` | Frame of every page: page title, fonts, language and zone providers |
-| `src/app/globals.css` | Colours, fonts and spacing for the whole site |
-| `src/app/icon.svg` | Browser tab icon |
-| `src/app/page.tsx` | **Fields now**: condition, traffic light, forecast, why, tips, weather alerts |
-| `src/app/trends/page.tsx` | **Trends**: 20-year direction of each variable with "confirmed / possible / no clear change" |
-| `src/app/chain/page.tsx` | **Drought chain**: how heat and rain pass to soil and crops, with delays |
-| `src/app/expected/page.tsx` | **Expected vs actual**: weather-only model against the satellite reading |
-| `src/app/compare/page.tsx` | **Ukraine vs Australia** |
-| `src/app/assistant/page.tsx` | **Ask**: the AI assistant |
-| `src/app/expert/page.tsx` | **Expert view**: any variable and period, full statistics, CSV downloads |
-| `src/components/Shell.tsx` | Header, menu, language switch, demo-data banner |
-| `src/components/ZonePicker.tsx` | Zone selector |
-| `src/components/ZoneMap.tsx` | Small map with the study zones |
-| `src/components/FieldStrip.tsx` | The coloured strip of months showing field condition |
-| `src/components/TimeChart.tsx` | Line chart over time with event markers (for example, the dam destruction) |
-| `src/components/NowParts.tsx` | Blocks of the main page: why chain, tips, alerts, data dates |
-| `src/components/bits.tsx` | Small shared pieces: loading/error message, traffic-light tag, page and section headings |
-| `src/lib/api.ts` | Talks to the backend; data types for every response |
-| `src/lib/i18n.tsx` | Language switching (Ukrainian / English) |
-| `src/lib/zone.tsx` | Remembers which zone is selected across pages |
-| `src/lib/format.ts` | Number and date formatting, traffic-light colours |
-| `src/i18n/uk.json`, `src/i18n/en.json` | **Every word shown on the site.** To change a text or add a language, edit these, not the pages |
-
-### `data/`: inputs
-
-| File | What's in it |
-|---|---|
-| `ukraine.csv` | Real monthly series for southern Ukraine, 2003–2025: temperature, rainfall, soil moisture at two depths, evaporation, snow, NAO and ONI indices |
-| `processed/all_series.parquet` | All monthly series for all zones in one table: zone, variable, date, value, unit, source |
-| `zones.csv` | Study zones: names in both languages, centre point and borders |
-| `events.csv` | Events marked on charts (dam destruction, droughts) |
-| `sources.csv` | Which NASA/NOAA product each variable comes from, with links |
-| `data_dates.csv` | Last available month for each data source |
-| `tips_rules.csv` | Which tip is shown for which signal, and in what order |
-
-### `results/`: outputs of the statistics and the model
-
-| File | What's in it |
-|---|---|
-| `trends.csv` | Trend per zone and variable: slope per decade, p-values before and after correction, label, years to certainty |
-| `lags.csv` | Delay and strength of each link in the drought chain (for example rain → soil moisture) |
-| `expected_vs_actual.parquet` | Monthly NDVI the weather-only model expected, the satellite reading, and the gap |
-| `forecast.parquet` | Forecast 1, 3 and 6 months ahead with an 80% range |
-| `model_skill.csv` | How accurate the forecast is compared with simple guesses |
-| `feature_importance.csv` | Which variables matter most for each country |
-| `alerts.csv` | Recent dry spells, heat days, frost, heavy rain |
-| `summary.csv` | Headline numbers for the comparison page: size of the hit, recovery time, chain delay |
-
-Whether a file holds real or demo data: open it and check the `source` column, or look for the "Demo data" banner on the site.
-
-## What it can't do
-
-- **It can't prove causes.** When two series move together, that doesn't mean one causes the other. The control zones help, but they are not an experiment.
-- **No cropland mask yet.** Zone averages include villages, roads and pasture, not only fields.
-- **It works at area level, not field level.** Some products have 25–50 km cells, so this is not a precision-farming app and doesn't try to be one.
-- **The data lags.** Monthly products arrive 1–2 months late, and the newest rainfall values are early estimates.
-- **The war affects NDVI directly.** Mined, shelled and abandoned fields lose greenness whatever the weather. We can't fully separate that from water loss.
-- **About 23 years is a short record** for confirming slow trends.
-
-## Next
-
-The work in order: put the real data in place of the demo files, then the Australia series, the NDVI cropland mask, and the model. After that: a month slider to replay any month since 2003, and a Telegram message when a zone's traffic light changes.
-
-## Team
-
-<!-- Fill in before publishing: names and who did what -->
-
-## License
-
-<!-- Not chosen yet. Add a LICENSE file (for example MIT) before the repo goes public. -->
-NASA and NOAA data are used under their open data policies.
-
-## Thanks
-
-NASA GES DISC, LP DAAC and JPL for the data, and the Giovanni and AppEEARS teams for tools that let students get it without writing a downloader. NOAA CPC for the ONI and NAO indices. Map outlines come from Natural Earth.
+**AI usage:** Some parts of code were generated by some generative AI models, such as Claude or Gemini. The in-app assistant uses a language model through OpenRouter.
