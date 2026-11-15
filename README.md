@@ -120,17 +120,88 @@ The assistant only gets the zone's computed results as context, not the open int
 
 The full list is at `/docs`. If a result file is missing, the endpoint returns an empty result and the page says "not published yet". It doesn't crash.
 
-## Repository
+## What each file does
 
-```
-backend/app/       API: main.py (routes), store.py (file reading), logic.py (traffic light, tips),
-                   assistant.py
-backend/mock/      demo data generator
-frontend/src/      Next.js pages, components, i18n/uk.json + en.json (all visible text lives here)
-data/, results/    pipeline output (demo for now)
-analysis.py        statistics for the real Ukraine dataset (prototype from the Streamlit version)
-CONTRACTS.md       file formats
-```
+### Top level
+
+| File / folder | What it is |
+|---|---|
+| `README.md` | This file |
+| `CONTRACTS.md` | The agreed formats of every data and result file: columns, units, fixed zone and variable names. The pipeline and the app both follow it. Read it before you add or rename a column |
+| `analysis.py` | Statistics for the real data: anomalies, Mann–Kendall trend test with Sen's slope, years until a trend becomes certain, lag correlations between variables |
+| `regions.py` | List of variables (name, unit, NASA source) and regions. Add a region here once its CSV is in `data/` |
+| `.gitignore` | Keeps `node_modules`, build folders, caches and `.env` files out of git |
+| `docs/` | Screenshots used in this README |
+
+### `backend/`: the API (Python, FastAPI)
+
+| File | What it does |
+|---|---|
+| `requirements.txt` | Python packages to install |
+| `app/main.py` | All API routes (`/api/...`), CORS settings, CSV downloads. Start point for uvicorn |
+| `app/store.py` | Reads the files from `data/` and `results/`. Caches them until a file changes. A missing file returns nothing instead of crashing |
+| `app/logic.py` | Turns the result files into what each page needs: traffic light, "why" chain, tips, Ukraine vs Australia comparison. The drought thresholds (−0.5 and −1) live **only here** |
+| `app/assistant.py` | The AI assistant. Sends the zone's computed numbers to the Claude API and asks it to cite the field behind each claim. Without an API key it returns "offline" and the site shows a template answer |
+| `app/__init__.py` | Empty; marks `app` as a Python package |
+| `mock/make_mock.py` | Writes invented demo data in the final formats, so the app can be built before real results exist. Every row it writes is marked `source = MOCK`, which turns on the "Demo data" banner |
+| `tests/test_api.py` | Checks that every endpoint answers and that missing files don't crash it. Run with `python -m pytest -q` |
+
+### `frontend/`: the website (Next.js, TypeScript)
+
+| File | What it does |
+|---|---|
+| `package.json`, `package-lock.json` | JavaScript packages and the `npm run dev` / `npm run build` commands. Run npm commands **inside `frontend/`** |
+| `.env.example` | Template for `.env.local`: the backend address (`NEXT_PUBLIC_API_URL`) |
+| `next.config.mjs`, `postcss.config.mjs`, `tsconfig.json`, `next-env.d.ts` | Settings for Next.js, CSS and TypeScript. Rarely need changes |
+| `src/app/layout.tsx` | Frame of every page: page title, fonts, language and zone providers |
+| `src/app/globals.css` | Colours, fonts and spacing for the whole site |
+| `src/app/icon.svg` | Browser tab icon |
+| `src/app/page.tsx` | **Fields now**: condition, traffic light, forecast, why, tips, weather alerts |
+| `src/app/trends/page.tsx` | **Trends**: 20-year direction of each variable with "confirmed / possible / no clear change" |
+| `src/app/chain/page.tsx` | **Drought chain**: how heat and rain pass to soil and crops, with delays |
+| `src/app/expected/page.tsx` | **Expected vs actual**: weather-only model against the satellite reading |
+| `src/app/compare/page.tsx` | **Ukraine vs Australia** |
+| `src/app/assistant/page.tsx` | **Ask**: the AI assistant |
+| `src/app/expert/page.tsx` | **Expert view**: any variable and period, full statistics, CSV downloads |
+| `src/components/Shell.tsx` | Header, menu, language switch, demo-data banner |
+| `src/components/ZonePicker.tsx` | Zone selector |
+| `src/components/ZoneMap.tsx` | Small map with the study zones |
+| `src/components/FieldStrip.tsx` | The coloured strip of months showing field condition |
+| `src/components/TimeChart.tsx` | Line chart over time with event markers (for example, the dam destruction) |
+| `src/components/NowParts.tsx` | Blocks of the main page: why chain, tips, alerts, data dates |
+| `src/components/bits.tsx` | Small shared pieces: loading/error message, traffic-light tag, page and section headings |
+| `src/lib/api.ts` | Talks to the backend; data types for every response |
+| `src/lib/i18n.tsx` | Language switching (Ukrainian / English) |
+| `src/lib/zone.tsx` | Remembers which zone is selected across pages |
+| `src/lib/format.ts` | Number and date formatting, traffic-light colours |
+| `src/i18n/uk.json`, `src/i18n/en.json` | **Every word shown on the site.** To change a text or add a language, edit these, not the pages |
+
+### `data/`: inputs
+
+| File | What's in it |
+|---|---|
+| `ukraine.csv` | Real monthly series for southern Ukraine, 2003–2025: temperature, rainfall, soil moisture at two depths, evaporation, snow, NAO and ONI indices |
+| `processed/all_series.parquet` | All monthly series for all zones in one table: zone, variable, date, value, unit, source |
+| `zones.csv` | Study zones: names in both languages, centre point and borders |
+| `events.csv` | Events marked on charts (dam destruction, droughts) |
+| `sources.csv` | Which NASA/NOAA product each variable comes from, with links |
+| `data_dates.csv` | Last available month for each data source |
+| `tips_rules.csv` | Which tip is shown for which signal, and in what order |
+
+### `results/`: outputs of the statistics and the model
+
+| File | What's in it |
+|---|---|
+| `trends.csv` | Trend per zone and variable: slope per decade, p-values before and after correction, label, years to certainty |
+| `lags.csv` | Delay and strength of each link in the drought chain (for example rain → soil moisture) |
+| `expected_vs_actual.parquet` | Monthly NDVI the weather-only model expected, the satellite reading, and the gap |
+| `forecast.parquet` | Forecast 1, 3 and 6 months ahead with an 80% range |
+| `model_skill.csv` | How accurate the forecast is compared with simple guesses |
+| `feature_importance.csv` | Which variables matter most for each country |
+| `alerts.csv` | Recent dry spells, heat days, frost, heavy rain |
+| `summary.csv` | Headline numbers for the comparison page: size of the hit, recovery time, chain delay |
+
+Whether a file holds real or demo data: open it and check the `source` column, or look for the "Demo data" banner on the site.
 
 ## What it can't do
 
