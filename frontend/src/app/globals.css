@@ -179,3 +179,6 @@ button[data-flag="AU"][data-on="true"] { background: linear-gradient(135deg, #e3
 [data-theme="dark"] .text-dusk { color: #b39ddf; }
 /* the theme switch takes no room where the header row is already full (very small phones) */
 @media (max-width: 359px) { .theme-toggle { display: none; } }
+/* Step by step: AI sentences fade in softly when they arrive (no label) */
+.step-ai-in { animation: step-ai-in .5s ease-out both; }
+@keyframes step-ai-in { from { opacity: 0; } to { opacity: 1; } }

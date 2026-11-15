@@ -249,14 +249,11 @@ const T: Record<string, Row> = {
   "st.v.key8": ["dry-spell chance, next 8 days: {pct}%", "ймовірність посухи на 8 днів: {pct}%", "Trockenphase in den nächsten 8 Tagen: {pct} %", "risque de période sèche sur 8 jours : {pct} %", "probabilità di periodo secco nei prossimi 8 giorni: {pct}%"],
   "st.v.harvest_t": ["National average {kgha} kg/ha ≈ {t} t for your field ({lo}–{hi} t)", "Середнє по країні {kgha} кг/га ≈ {t} т з вашого поля ({lo}–{hi} т)", "Landesdurchschnitt {kgha} kg/ha ≈ {t} t für dein Feld ({lo}–{hi} t)", "Moyenne nationale {kgha} kg/ha ≈ {t} t pour votre champ ({lo}–{hi} t)", "Media nazionale {kgha} kg/ha ≈ {t} t per il tuo campo ({lo}–{hi} t)"],
   "st.typical": ["typical", "типово", "typisch", "typique", "tipico"],
-  "st.ai_writing": ["AI summary is writing…", "ШІ пише підсумок…", "Die KI-Zusammenfassung wird geschrieben…", "L'IA rédige le résumé…", "L'IA sta scrivendo il riepilogo…"],
-  "st.ai_unavailable": ["AI summary is not available right now", "Підсумок ШІ зараз недоступний", "KI-Zusammenfassung ist gerade nicht verfügbar", "Le résumé IA n'est pas disponible pour le moment", "Il riepilogo IA non è disponibile al momento"],
   "st.years": ["Year by year", "Рік за роком", "Jahr für Jahr", "Année par année", "Anno per anno"],
   "st.flag.ok": ["keep the crop", "залишайте культуру", "Kultur beibehalten", "garder la culture", "mantenere la coltura"],
   "st.flag.watch": ["keep, but watch closely", "залишайте, але уважно стежте", "beibehalten, aber genau beobachten", "garder, mais surveiller de près", "mantenere, ma osservare con attenzione"],
   "st.flag.switch": ["consider switching to {alt}", "варто перейти на {alt}", "Wechsel zu {alt} erwägen", "envisager de passer à {alt}", "valutare il passaggio a {alt}"],
   "st.years_note": ["Future years are a scenario if the 2003–2025 trend continues, not a forecast.", "Майбутні роки — сценарій, якщо тренд 2003–2025 триватиме, а не прогноз.", "Künftige Jahre sind ein Szenario, wenn sich der Trend 2003–2025 fortsetzt, keine Prognose.", "Les années futures sont un scénario si la tendance 2003–2025 continue, pas une prévision.", "Gli anni futuri sono uno scenario se la tendenza 2003–2025 continua, non una previsione."],
-  "st.note": ["Steps are built from your numbers; AI text, check before acting.", "Кроки побудовано з ваших чисел; текст ШІ — перевірте, перш ніж діяти.", "Die Schritte stammen aus deinen Zahlen; KI-Text – vor dem Handeln prüfen.", "Les étapes viennent de vos chiffres ; texte IA, à vérifier avant d'agir.", "I passi derivano dai tuoi numeri; testo IA, verifica prima di agire."],
 
   // UI polish: loader, splash, coach marks
   "loader.title": ["Reading NASA satellite data…", "Читаємо супутникові дані NASA…", "NASA-Satellitendaten werden gelesen…", "Lecture des données satellite de la NASA…", "Lettura dei dati satellitari NASA…"],

@@ -538,7 +538,7 @@ function StepsCard({ s }: { s: StepsState }) {
   const parsed = useMemo(() => (ai.text ? parseSteps(ai.text, d.season, d.years.map((y) => y.year), lang) : null), [ai.text, d, lang]);
   const months = (ms: number[]) => ms.map((m) => monthName(m, lang, "short")).join("–");
   const pct = (v: unknown) => (v === null || v === undefined ? "—" : String(v));
-  const aiLine = (txt: string | undefined) => (txt ? <p className="text-sm mt-1 rounded-md bg-chalk px-2 py-1" data-step-ai>{txt}</p> : null);
+  const aiLine = (txt: string | undefined) => (txt ? <p className="step-ai-in text-sm mt-1 rounded-md bg-chalk px-2 py-1" data-step-ai>{txt}</p> : null);
 
   function values(st: StepItem) {
     const v = st.values;
@@ -560,12 +560,6 @@ function StepsCard({ s }: { s: StepsState }) {
 
   return (
     <Card title={t("st.title")}>
-      {ai.state === "loading" && (
-        <p className="text-moss text-sm flex items-center gap-2 mb-3" data-step-ai-state="loading">
-          <span className="inline-block w-2 h-2 rounded-full bg-water animate-pulse" />{t("st.ai_writing")}
-        </p>
-      )}
-      {ai.state === "failed" && <p className="text-moss text-sm mb-3" data-step-ai-state="failed">{t("st.ai_unavailable")}</p>}
       <ol className="relative border-l-2 border-rule ml-2">
         {d.season.map((st, k) => (
           <li key={`${st.kind}-${k}`} className="ml-4 mb-4 last:mb-0">
@@ -602,9 +596,8 @@ function StepsCard({ s }: { s: StepsState }) {
           <p className="mt-2 text-xs text-moss">{t("st.years_note")}</p>
         </>
       )}
-      {ai.state === "done" && ai.text && !parsed && <p className="mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-whole>{ai.text}</p>}
-      {ai.state === "done" && parsed && parsed.rest.length > 0 && <p className="mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-rest>{parsed.rest.join("\n")}</p>}
-      <p className="mt-3 text-xs text-moss">{t("st.note")}</p>
+      {ai.state === "done" && ai.text && !parsed && <p className="step-ai-in mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-whole>{ai.text}</p>}
+      {ai.state === "done" && parsed && parsed.rest.length > 0 && <p className="step-ai-in mt-3 text-sm whitespace-pre-wrap rounded-md bg-chalk px-3 py-2" data-step-ai-rest>{parsed.rest.join("\n")}</p>}
     </Card>
   );
 }
