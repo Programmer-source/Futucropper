@@ -8,7 +8,7 @@ import { LangProvider } from "@/lib/i18n";
 import { ZoneProvider } from "@/lib/zone";
 
 export const metadata: Metadata = {
-  title: "Follow the Gas: drought watch from NASA data",
+  title: "Futucropper: drought watch from NASA data",
   description: "Field greenness, drought outlook and climate trends for irrigated farmland in southern Ukraine and Australia.",
 };
 

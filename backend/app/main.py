@@ -13,9 +13,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from . import advisor, assistant, llm, logic, planner, store
+from . import advisor, assistant, future, llm, logic, planner, store
 
-app = FastAPI(title="Follow the Gas API", version="0.5.0")
+app = FastAPI(title="Futucropper API", version="0.5.0")
 app.add_middleware(GZipMiddleware, minimum_size=2000)
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
                    allow_methods=["*"], allow_headers=["*"])
@@ -146,6 +146,20 @@ def pixels():
     if p is None:
         raise HTTPException(404, "Pixel maps not built yet (run pipeline/build_pixel_maps.py)")
     return p
+
+
+@app.get("/api/future")
+def future_view(region: str = Query(..., pattern="^(UA|AU)$")):
+    b = future.bundle(region)
+    if b is None:
+        raise HTTPException(404, "Season maps not built yet (run pipeline/build_season_maps.py)")
+    return b
+
+
+@app.get("/api/future/explain")
+def future_explain(region: str = Query(..., pattern="^(UA|AU)$"), year: int = Query(..., ge=2003, le=2035),
+                   season: str = Query(..., pattern="^(DJF|MAM|JJA|SON)$"), lang: str = Query("en", pattern="^(en|uk|de|fr|it)$")):
+    return future.explain(region, year, season, lang)
 
 
 @app.get("/api/advisor/options")

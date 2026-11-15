@@ -24,7 +24,7 @@ def _openrouter(messages):
                    headers={"Authorization": f"Bearer {key}", "HTTP-Referer": "http://localhost:3000",
                             "X-Title": "Follow the Gas"},
                    json={"model": os.environ.get("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free"),
-                         "messages": messages, "max_tokens": 900, "temperature": 0.3})
+                         "messages": messages, "max_tokens": 900, "temperature": 0.3, "reasoning": {"enabled": False}})
     r.raise_for_status()
     c = r.json()["choices"][0]["message"]["content"]
     return c.strip() if isinstance(c, str) else None

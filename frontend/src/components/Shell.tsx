@@ -6,7 +6,7 @@ import { Lang, LANGS, useLang, useT } from "@/lib/i18n";
 import { useZone } from "@/lib/zone";
 import { ZonePicker } from "./ZonePicker";
 
-const NAV = [["/", "nav.map"], ["/plan", "nav.plan"], ["/science", "nav.science"]] as const;
+const NAV = [["/", "nav.map"], ["/plan", "nav.plan"], ["/future", "nav.future"], ["/science", "nav.science"]] as const;
 const SCIENCE = ["/science", "/now", "/dashboard", "/trends", "/chain", "/expected", "/compare", "/assistant", "/expert", "/roadmap"];
 
 export function Shell({ children }: { children: React.ReactNode }) {
