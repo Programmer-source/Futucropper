@@ -55,6 +55,8 @@ export function Splash() {
         </svg>
       )}
       <div className="relative text-center px-6">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={reduced ? "/logo/logo-mark.webp" : "/logo/logo-animated.webp"} alt="" width={96} height={96} className="sp-mark mx-auto mb-4 w-24 h-24" />
         <p className="sp-logo font-display text-4xl sm:text-5xl font-semibold text-white">{t("app.name")}</p>
         <p className="sp-tag mt-3 text-[#cfe0d4]">{t("app.tagline2")}</p>
       </div>

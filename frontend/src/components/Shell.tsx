@@ -24,6 +24,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <header className="border-b border-rule bg-panel">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-4 pb-3 flex flex-wrap items-center gap-x-6 gap-y-3">
           <Link href="/" className="flex items-baseline gap-3 mr-auto">
+            {/* logo: shown only where the header row has room for it, so the header never wraps (see globals.css) */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo/logo-mark.webp" alt="Futucropper" width={32} height={32} decoding="async"
+              className={`brand-logo self-center ${inScience && path !== "/science" ? "brand-logo-sub" : ""}`} />
             <span className="font-display text-lg font-semibold">{t("app.name")}</span>
             <span className="hidden md:inline text-sm text-moss">{t("app.tagline2")}</span>
           </Link>
