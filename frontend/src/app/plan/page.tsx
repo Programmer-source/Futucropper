@@ -9,8 +9,11 @@ import type { Lang } from "@/lib/i18n";
 import { Msg } from "@/lib/llm";
 import { askAI, clean } from "@/lib/llm";
 import { useZone, useZoneName } from "@/lib/zone";
+import { Flag } from "@/components/Flag";
+import { Loader, MapSkeleton } from "@/components/Loader";
+import { CountUp, ScoreRing } from "@/components/Motion";
 
-const PlanMap = dynamic(() => import("@/components/maps").then((m) => m.PlanMap), { ssr: false });
+const PlanMap = dynamic(() => import("@/components/maps").then((m) => m.PlanMap), { ssr: false, loading: () => <MapSkeleton /> });
 
 type Options = Record<string, { country: "UA" | "AU"; sow: number[]; irrigated_only: boolean }>;
 type Form = {
@@ -135,7 +138,7 @@ export default function PlanPage() {
         <form onSubmit={(e) => { e.preventDefault(); calc(); }} className="rounded-lg bg-panel border border-rule px-4">
           <Step n={1} title={t("p.s1")} hint={t("p.s1_hint")}>
             <div className="flex flex-wrap gap-2 mb-2">
-              {(["UA", "AU"] as const).map((r) => <button type="button" key={r} onClick={() => { setReg(r); setF((x) => ({ ...x, lat: null, lon: null })); }} className={chip(reg === r)}>{t(`country.${r}`)}</button>)}
+              {(["UA", "AU"] as const).map((r) => <button type="button" key={r} onClick={() => { setReg(r); setF((x) => ({ ...x, lat: null, lon: null })); }} className={`${chip(reg === r)} inline-flex items-center gap-2`} data-flag={r} data-on={reg === r}><Flag c={r} active={reg === r} />{t(`country.${r}`)}</button>)}
               {zones.map((z) => (
                 <button type="button" key={z.zone} onClick={() => setF((x) => ({ ...x, lat: z.lat, lon: z.lon }))} className="text-xs px-2.5 py-1 rounded-full border border-rule hover:border-basalt">{name(z.zone)}</button>
               ))}
@@ -217,7 +220,8 @@ export default function PlanPage() {
         </form>
 
         <div ref={resultRef} className="scroll-mt-4">
-          {!res && <div className="rounded-lg border border-dashed border-rule p-6 text-moss">{t("r.empty")}</div>}
+          {busy && <div className="rounded-lg bg-panel border border-rule mb-4"><Loader /></div>}
+          {!res && !busy && <div className="rounded-lg border border-dashed border-rule p-6 text-moss">{t("r.empty")}</div>}
           {res && <ResultView r={res} onTry={tryTip} busy={busy} steps={steps} />}
         </div>
       </div>
@@ -267,8 +271,9 @@ function ResultView({ r, onTry, busy, steps }: { r: Result; onTry: (code: string
     <div className={busy ? "opacity-60 transition-opacity" : ""}>
       <Card>
         <div className="flex items-start gap-4">
-          <div className="shrink-0 w-24 h-24 rounded-full grid place-items-center text-white" style={{ background: LIGHT_COLOR[tone] }}>
-            <span className="text-3xl font-semibold tabular">{r.score}</span>
+          <div className="relative shrink-0 w-24 h-24 rounded-full grid place-items-center text-white" style={{ background: LIGHT_COLOR[tone] }}>
+            <ScoreRing value={r.score} />
+            <span className="text-3xl font-semibold tabular"><CountUp value={r.score} /></span>
           </div>
           <div>
             <p className="text-xs text-moss">{t("r.score")} /100</p>

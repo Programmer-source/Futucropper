@@ -2,10 +2,11 @@
 import { API_URL, Light } from "@/lib/api";
 import { LIGHT_COLOR } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { Loader } from "./Loader";
 
 export function Status({ loading, error, empty }: { loading?: boolean; error?: string | null; empty?: boolean }) {
   const { t } = useT();
-  if (loading) return <p className="text-moss">{t("state.loading")}</p>;
+  if (loading) return <Loader />;
   if (error) return <p className="text-scorch measure">{t("state.offline", { url: API_URL })}</p>;
   if (empty) return <p className="text-moss measure">{t("state.empty")}</p>;
   return null;

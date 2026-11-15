@@ -14,7 +14,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk">
+    <html lang="uk" suppressHydrationWarning>
+      <head>
+        {/* hide the intro splash before first paint if it was already shown in this browser session */}
+        <script dangerouslySetInnerHTML={{ __html: "try{if(sessionStorage.getItem('ftc-splash-seen')==='1')document.documentElement.classList.add('splash-seen')}catch(e){}" }} />
+        {/* optional dark theme: apply a saved "dark" choice before first paint (light is the default) */}
+        <script dangerouslySetInnerHTML={{ __html: "try{if(localStorage.getItem('ftc-theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}" }} />
+      </head>
       <body>
         <LangProvider>
           <ZoneProvider>

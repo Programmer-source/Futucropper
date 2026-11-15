@@ -6,6 +6,8 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CartesianGrid, ComposedChart, ErrorBar, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Status } from "@/components/bits";
+import { Flag } from "@/components/Flag";
+import { MapSkeleton } from "@/components/Loader";
 import { Legend } from "@/components/TimeChart";
 import { API_URL, Light, useApi } from "@/lib/api";
 import { LIGHT_COLOR, num } from "@/lib/format";
@@ -13,7 +15,7 @@ import { LOCALE, monthName, useT } from "@/lib/i18n";
 import { gridToDataUrl, zFill } from "@/lib/pixels";
 import { useZone, useZoneName } from "@/lib/zone";
 
-const FarmMap = dynamic(() => import("@/components/maps").then((m) => m.FarmMap), { ssr: false });
+const FarmMap = dynamic(() => import("@/components/maps").then((m) => m.FarmMap), { ssr: false, loading: () => <MapSkeleton height="h-[min(62vh,560px)]" /> });
 
 type Season = "DJF" | "MAM" | "JJA" | "SON";
 type Obs = { ndvi_z: number | null; soil_mm: number | null; rain_mm: number | null; temp_c: number | null };
@@ -217,8 +219,8 @@ export default function FuturePage() {
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {(["UA", "AU"] as const).map((r) => (
-          <button key={r} onClick={() => setReg(r)} aria-pressed={reg === r}
-            className={`px-4 py-2 rounded-full border ${reg === r ? "bg-basalt text-white border-basalt" : "border-rule bg-panel hover:border-basalt"}`}>{t(`country.${r}`)}</button>
+          <button key={r} onClick={() => setReg(r)} aria-pressed={reg === r} data-flag={r} data-on={reg === r}
+            className={`px-4 py-2 rounded-full border inline-flex items-center gap-2 ${reg === r ? "bg-basalt text-white border-basalt" : "border-rule bg-panel hover:border-basalt"}`}><Flag c={r} active={reg === r} />{t(`country.${r}`)}</button>
         ))}
         <span className="w-px h-6 bg-rule mx-2" aria-hidden />
         {d?.zones.map((z) => (
@@ -268,9 +270,9 @@ export default function FuturePage() {
                   className="rounded-full bg-basalt text-white w-10 h-10 shrink-0" aria-label={play ? t("f.pause") : t("f.play")}>{play ? "❚❚" : "▶"}</button>
                 <input type="range" min={0} max={steps.length - 1} value={Math.min(i, steps.length - 1)}
                   onChange={(e) => { setPlay(false); setI(Number(e.target.value)); setArmed(true); setDragged((x) => x + 1); }}
-                  className="flex-1" aria-label={`${step.year} · ${seasonLabel(step.season)}`} />
+                  className={`flex-1 ${play ? "range-glow" : ""}`} aria-label={`${step.year} · ${seasonLabel(step.season)}`} />
               </div>
-              <p className="mt-2 font-semibold tabular">{step.year} · {seasonLabel(step.season)}</p>
+              <p className="mt-2 font-semibold tabular overflow-hidden"><span key={step.id} className={`inline-block ${play ? "year-flip" : ""}`}>{step.year} · {seasonLabel(step.season)}</span></p>
               <div className="mt-0.5 flex justify-between text-xs text-moss tabular">
                 <span>{steps[0]?.year}</span><span>{steps[steps.length - 1]?.year}</span>
               </div>

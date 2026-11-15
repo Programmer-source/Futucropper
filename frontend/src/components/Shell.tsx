@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { API_URL } from "@/lib/api";
 import { Lang, LANGS, useLang, useT } from "@/lib/i18n";
 import { useZone } from "@/lib/zone";
+import { Splash } from "./Splash";
+import { ThemeToggle } from "./ThemeToggle";
 import { ZonePicker } from "./ZonePicker";
 
 const NAV = [["/", "nav.map"], ["/plan", "nav.plan"], ["/future", "nav.future"], ["/science", "nav.science"]] as const;
@@ -18,6 +20,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Splash />
       <header className="border-b border-rule bg-panel">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 pt-4 pb-3 flex flex-wrap items-center gap-x-6 gap-y-3">
           <Link href="/" className="flex items-baseline gap-3 mr-auto">
@@ -25,6 +28,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <span className="hidden md:inline text-sm text-moss">{t("app.tagline2")}</span>
           </Link>
           {inScience && path !== "/science" && <ZonePicker />}
+          <span className="flex items-center gap-2">
+          {/* the theme switch only where the header row has room (not next to the zone picker) */}
+          {!(inScience && path !== "/science") && <ThemeToggle />}
           <label className="text-sm flex items-center gap-2">
             <span className="sr-only">{t("lang.label")}</span>
             <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t("lang.label")}
@@ -32,6 +38,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               {LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
             </select>
           </label>
+          </span>
         </div>
         <nav className="mx-auto max-w-6xl px-4 sm:px-6 flex gap-1 overflow-x-auto" aria-label="Sections">
           {NAV.map(([href, key]) => {

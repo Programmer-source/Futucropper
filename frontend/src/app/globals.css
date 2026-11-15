@@ -37,3 +37,145 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; letter-spacing
 .leaflet-tooltip.zone-label { background: rgba(255,255,255,.92); border: 1px solid #18231f; border-radius: 6px; padding: 2px 6px;
   font-size: 12px; font-weight: 600; color: #18231f; box-shadow: none; }
 .leaflet-tooltip.zone-label::before { display: none; }
+
+/* ======================= UI polish (visual only) ======================= */
+
+/* cards: short fade-and-rise, in sequence */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+main section.rounded-lg, main aside.rounded-lg { animation: rise .3s ease-out both; }
+main section.rounded-lg:nth-child(2) { animation-delay: .06s; }
+main section.rounded-lg:nth-child(3) { animation-delay: .12s; }
+main section.rounded-lg:nth-child(4) { animation-delay: .18s; }
+main section.rounded-lg:nth-child(5) { animation-delay: .24s; }
+main section.rounded-lg:nth-child(n+6) { animation-delay: .3s; }
+
+/* buttons and chips: slight lift on hover, small press on click */
+button:not(:disabled) { transition: transform .12s ease, box-shadow .12s ease, background-color .15s ease, border-color .15s ease, color .15s ease; }
+button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(24, 35, 31, .12); }
+button:not(:disabled):active { transform: translateY(0) scale(.97); box-shadow: none; }
+
+/* country flags: soft scale-up and a small wave when selected; the button takes a light tint of the flag */
+.flag { transition: transform .2s ease; transform-origin: left center; box-shadow: 0 0 0 1px rgba(24, 35, 31, .15); }
+.flag-on { transform: scale(1.15); animation: flag-wave .6s ease-out; }
+@keyframes flag-wave {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.22) skewY(-6deg); }
+  55% { transform: scale(1.18) skewY(5deg); }
+  80% { transform: scale(1.16) skewY(-2deg); }
+  100% { transform: scale(1.15); }
+}
+button[data-flag="UA"][data-on="true"] { background: linear-gradient(180deg, #e3eefb 0 50%, #fff6c7 50% 100%); color: var(--color-basalt); border-color: #0057B7; }
+button[data-flag="AU"][data-on="true"] { background: linear-gradient(135deg, #e3e8f5 0%, #eef1f9 60%, #f8e4e7 100%); color: var(--color-basalt); border-color: #012169; }
+
+/* loader: Earth + orbiting satellite, pulsing dots, rotating facts */
+.loader-earth { background: radial-gradient(circle at 35% 30%, #8fd0a8 0%, #3f8f5a 35%, #2457a6 75%, #173a72 100%); box-shadow: 0 0 18px rgba(36, 87, 166, .35); }
+.loader-orbit { animation: orbit 2s linear infinite; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+.loader-dots i { width: 6px; height: 6px; border-radius: 999px; background: var(--color-canopy); display: inline-block; animation: dot 1.2s ease-in-out infinite both; }
+.loader-dots i:nth-child(2) { animation-delay: .2s; }
+.loader-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes dot { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1.1); } }
+.loader-fact { animation: rise .4s ease-out both; }
+
+/* map skeleton: grey rounded box with a soft shimmer */
+.skeleton { background: linear-gradient(100deg, #e8ece6 30%, #f4f6f2 50%, #e8ece6 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* map: the clicked spot pulses; zone boxes highlight on hover (Leaflet SVG paths, no map code changed) */
+.leaflet-overlay-pane path.leaflet-interactive[fill="#fff"][stroke="#18231f"] { transform-box: fill-box; transform-origin: center; animation: spot-pulse 1.6s ease-out infinite; }
+@keyframes spot-pulse {
+  0% { filter: drop-shadow(0 0 0 rgba(46, 106, 76, .9)); }
+  60% { filter: drop-shadow(0 0 7px rgba(46, 106, 76, .75)) drop-shadow(0 0 2px rgba(46, 106, 76, .9)); transform: scale(1.12); }
+  100% { filter: drop-shadow(0 0 0 rgba(46, 106, 76, 0)); transform: scale(1); }
+}
+.leaflet-overlay-pane path.leaflet-interactive[fill="none"] { transition: stroke-width .15s ease, filter .15s ease; }
+.leaflet-overlay-pane path.leaflet-interactive[fill="none"]:hover { stroke-width: 5px; filter: drop-shadow(0 0 4px rgba(24, 35, 31, .35)); }
+
+/* plan score: the ring fills like a gauge */
+.score-ring { transition: stroke-dashoffset .8s cubic-bezier(.2, .7, .2, 1); }
+
+/* see the future: the year flips while playing; the slider glows */
+.year-flip { animation: year-flip .35s ease-out; }
+@keyframes year-flip { from { opacity: 0; transform: translateY(70%); } to { opacity: 1; transform: none; } }
+.range-glow { accent-color: var(--color-canopy); animation: glow 1.2s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { filter: drop-shadow(0 0 2px rgba(46, 106, 76, .5)); } 50% { filter: drop-shadow(0 0 8px rgba(46, 106, 76, .95)); } }
+
+/* coach marks */
+.coach { animation: rise .3s ease-out both; }
+.coach-target { position: relative; z-index: 1001; outline: 3px solid #f2c14e; outline-offset: 4px; border-radius: 10px; animation: coach-pulse 1.4s ease-in-out infinite; }
+@keyframes coach-pulse { 0%, 100% { outline-color: #f2c14e; } 50% { outline-color: rgba(242, 193, 78, .35); } }
+
+/* intro splash */
+.splash-seen [data-splash] { display: none; }
+.splash { background: radial-gradient(ellipse at 50% 110%, #1b3a5c 0%, #0b1424 55%, #05080f 100%); transition: opacity .3s ease; cursor: pointer; }
+.splash-out { opacity: 0; }
+.sp-star { animation: twinkle 1.6s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: .2; } }
+.sp-earth { animation: earth-rise 1s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes earth-rise { from { transform: translateY(120px); } to { transform: none; } }
+.sp-field { fill: #4a8c3f; animation: field-green 1.6s ease-in-out both; }
+@keyframes field-green { 0%, 35% { fill: #8a5a2b; } 85%, 100% { fill: #4a8c3f; } }
+.sp-sat { transform: translate(470px, 140px); animation: sat-cross 1.6s ease-in-out both; }
+@keyframes sat-cross { from { transform: translate(-70px, 170px); } to { transform: translate(470px, 140px); } }
+.sp-beam { animation: beam .4s ease-in-out infinite alternate; }
+@keyframes beam { from { opacity: .15; } to { opacity: .45; } }
+.sp-logo { animation: logo-in .5s ease-out 1s both; }
+.sp-tag { animation: logo-in .5s ease-out 1.2s both; }
+@keyframes logo-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ======================= Optional dark theme =======================
+   Light (above) is the default and is not changed. Everything below applies only after the user
+   switches on dark mode (html[data-theme="dark"]). Same token names, darker shades of our own palette;
+   accents and data colours (canopy, straw, scorch, water, dusk, map and chart scales) keep their hue. */
+:root[data-theme="dark"] {
+  --color-chalk: #111915;      /* page */
+  --color-panel: #19231e;      /* panels */
+  --color-basalt: #e6ebe4;     /* text */
+  --color-moss: #a2b1a8;       /* secondary text */
+  --color-rule: #2e3a34;       /* lines */
+  color-scheme: dark;          /* native selects, inputs and scrollbars */
+}
+[data-theme="dark"] ::selection { background: #2c4a3a; }
+
+/* "selected / primary" surfaces (bg-basalt + white text) invert, keeping the same strong emphasis */
+[data-theme="dark"] .bg-basalt.text-white, [data-theme="dark"] .bg-basalt .text-white { color: #111915; }
+
+/* hard-coded light tints: dark values only here (light values in the components are unchanged) */
+[data-theme="dark"] .bg-\[\#fbf3dc\] { background-color: #3a3221; }
+[data-theme="dark"] .border-\[\#ecd9a3\] { border-color: #6b5a30; }
+[data-theme="dark"] .bg-\[\#e5f0e8\] { background-color: #1f3a2c; }
+
+/* flag-tinted country buttons: darker tints of the same flag colours */
+[data-theme="dark"] button[data-flag="UA"][data-on="true"] { background: linear-gradient(180deg, #16355e 0 50%, #4a3f0c 50% 100%); color: var(--color-basalt); border-color: #0057B7; }
+[data-theme="dark"] button[data-flag="AU"][data-on="true"] { background: linear-gradient(135deg, #142650 0%, #1b2b52 60%, #4a1f2a 100%); color: var(--color-basalt); border-color: #3b5cb8; }
+
+/* coach marks keep their dark card */
+[data-theme="dark"] .coach { background-color: #0b110e; color: #fff; border: 1px solid var(--color-rule); }
+[data-theme="dark"] .coach .text-basalt { color: #18231f; }
+
+/* charts (SVG): axis text, labels and grid lines get light values; series colours are unchanged */
+[data-theme="dark"] svg text[fill="#56655d"], [data-theme="dark"] svg text[style*="rgb(86, 101, 93)"] { fill: var(--color-moss) !important; }
+[data-theme="dark"] svg text[fill="#18231f"], [data-theme="dark"] svg text[style*="rgb(24, 35, 31)"] { fill: var(--color-basalt) !important; }
+[data-theme="dark"] .recharts-cartesian-axis-tick-value { fill: var(--color-moss); }
+[data-theme="dark"] svg [stroke="#e3e7e1"], [data-theme="dark"] svg [stroke="#d6dbd3"] { stroke: var(--color-rule); }
+[data-theme="dark"] main svg line[stroke="#18231f"], [data-theme="dark"] main svg path[stroke="#18231f"]:not(.leaflet-interactive) { stroke: var(--color-basalt); }
+[data-theme="dark"] svg [fill="#eef1ec"] { fill: #222d27; }
+[data-theme="dark"] .recharts-default-tooltip { background-color: var(--color-panel) !important; border-color: var(--color-rule) !important; color: var(--color-basalt); }
+
+/* map: darken ONLY the OpenStreetMap base tiles; our overlays (pixel maps, zones, cells, markers) are not filtered */
+[data-theme="dark"] .leaflet-container { background: #1a231f; }
+[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6); }
+[data-theme="dark"] .leaflet-overlay-pane path.leaflet-interactive[fill="none"][stroke="#18231f"] { stroke: #e6ebe4; }
+[data-theme="dark"] .leaflet-control-zoom a { background: var(--color-panel); color: var(--color-basalt); border-color: var(--color-rule); }
+[data-theme="dark"] .leaflet-control-attribution { background: rgba(25, 35, 30, .85); color: var(--color-moss); }
+[data-theme="dark"] .leaflet-control-attribution a { color: #7fb0e8; }
+
+/* loader skeleton */
+[data-theme="dark"] .skeleton { background: linear-gradient(100deg, #1d2722 30%, #26322c 50%, #1d2722 70%); background-size: 200% 100%; }
+/* accent colours used as TEXT get lighter shades of the same hue on dark panels (fills and data colours unchanged) */
+[data-theme="dark"] .text-canopy { color: #6fbf8f; }
+[data-theme="dark"] .text-scorch { color: #e8866b; }
+[data-theme="dark"] .text-water { color: #7fb0e8; }
+[data-theme="dark"] .text-dusk { color: #b39ddf; }
+/* the theme switch takes no room where the header row is already full (very small phones) */
+@media (max-width: 359px) { .theme-toggle { display: none; } }

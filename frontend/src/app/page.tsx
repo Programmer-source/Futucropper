@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AIText, useAI } from "@/components/AIBox";
 import { Status } from "@/components/bits";
+import { Flag } from "@/components/Flag";
+import { Loader, MapSkeleton } from "@/components/Loader";
+import { CoachMarks } from "@/components/Motion";
 import { get, Light, useApi } from "@/lib/api";
 import { num } from "@/lib/format";
 import { monthName, useT } from "@/lib/i18n";
@@ -11,7 +14,7 @@ import { Msg } from "@/lib/llm";
 import { gridToDataUrl, PixelMaps, scoreColor } from "@/lib/pixels";
 import { useZone, useZoneName } from "@/lib/zone";
 
-const FarmMap = dynamic(() => import("@/components/maps").then((m) => m.FarmMap), { ssr: false });
+const FarmMap = dynamic(() => import("@/components/maps").then((m) => m.FarmMap), { ssr: false, loading: () => <MapSkeleton height="h-[min(62vh,560px)]" /> });
 
 type Options = Record<string, { country: "UA" | "AU"; sow: number[]; window: string; irrigated_only: boolean }>;
 type Ranking = { ranking: { zone: string; best_score: number; best_month: number }[] };
@@ -77,11 +80,12 @@ export default function MapPage() {
       <h1 className="text-2xl sm:text-3xl font-semibold">{t("m.title")}</h1>
       <p className="measure mt-2 text-moss">{t("m.lead")}</p>
       <Status loading={maps.loading} error={maps.error} />
+      <CoachMarks />
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+      <div className="mt-5 flex flex-wrap items-center gap-2" data-coach="1">
         {(["UA", "AU"] as const).map((r) => (
-          <button key={r} onClick={() => setReg(r)} aria-pressed={reg === r}
-            className={`px-4 py-2 rounded-full border ${reg === r ? "bg-basalt text-white border-basalt" : "border-rule bg-panel hover:border-basalt"}`}>{t(`country.${r}`)}</button>
+          <button key={r} onClick={() => setReg(r)} aria-pressed={reg === r} data-flag={r} data-on={reg === r}
+            className={`px-4 py-2 rounded-full border inline-flex items-center gap-2 ${reg === r ? "bg-basalt text-white border-basalt" : "border-rule bg-panel hover:border-basalt"}`}><Flag c={r} active={reg === r} />{t(`country.${r}`)}</button>
         ))}
         <span className="w-px h-6 bg-rule mx-2" aria-hidden />
         {crops.map((c) => (
@@ -92,7 +96,7 @@ export default function MapPage() {
 
       {bounds && (
         <div className="mt-4 grid lg:grid-cols-[1fr_340px] gap-5">
-          <div>
+          <div data-coach="2">
             <FarmMap bounds={bounds} image={image} zones={zones} lights={lights} labels={labels} picked={picked} onPick={(lat, lon) => setPicked({ lat, lon })} />
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-moss">
               <span>{t("m.legend_lo")}</span>
@@ -102,9 +106,9 @@ export default function MapPage() {
             <p className="mt-1 text-xs text-moss measure">{t("m.outline")} {t("m.how")}</p>
           </div>
 
-          <aside className="rounded-lg bg-panel border border-rule p-4 self-start">
+          <aside className="rounded-lg bg-panel border border-rule p-4 self-start" data-coach="3">
             {!picked && <p className="text-moss">{t("m.click_hint")}</p>}
-            {picked && !spot && <p className="text-moss text-sm">{t("state.loading")}</p>}
+            {picked && !spot && <Loader compact />}
             {picked && spot && (
               <>
                 <p className="text-xs text-moss tabular">{t("m.here")} · {num(picked.lat, 3, false, lang)}°, {num(picked.lon, 3, false, lang)}°</p>

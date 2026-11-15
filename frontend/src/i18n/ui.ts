@@ -258,6 +258,24 @@ const T: Record<string, Row> = {
   "st.years_note": ["Future years are a scenario if the 2003–2025 trend continues, not a forecast.", "Майбутні роки — сценарій, якщо тренд 2003–2025 триватиме, а не прогноз.", "Künftige Jahre sind ein Szenario, wenn sich der Trend 2003–2025 fortsetzt, keine Prognose.", "Les années futures sont un scénario si la tendance 2003–2025 continue, pas une prévision.", "Gli anni futuri sono uno scenario se la tendenza 2003–2025 continua, non una previsione."],
   "st.note": ["Steps are built from your numbers; AI text, check before acting.", "Кроки побудовано з ваших чисел; текст ШІ — перевірте, перш ніж діяти.", "Die Schritte stammen aus deinen Zahlen; KI-Text – vor dem Handeln prüfen.", "Les étapes viennent de vos chiffres ; texte IA, à vérifier avant d'agir.", "I passi derivano dai tuoi numeri; testo IA, verifica prima di agire."],
 
+  // UI polish: loader, splash, coach marks
+  "loader.title": ["Reading NASA satellite data…", "Читаємо супутникові дані NASA…", "NASA-Satellitendaten werden gelesen…", "Lecture des données satellite de la NASA…", "Lettura dei dati satellitari NASA…"],
+  "loader.fact1": ["23 years of NASA data, 2003–2025", "23 роки даних NASA, 2003–2025", "23 Jahre NASA-Daten, 2003–2025", "23 ans de données NASA, 2003–2025", "23 anni di dati NASA, 2003–2025"],
+  "loader.fact2": ["5 farming zones in Ukraine and Australia", "5 аграрних зон в Україні та Австралії", "5 Agrarzonen in der Ukraine und in Australien", "5 zones agricoles en Ukraine et en Australie", "5 zone agricole in Ucraina e Australia"],
+  "loader.fact3": ["Each 5 km field compared with its neighbours", "Кожне поле 5 км порівнюємо з сусідніми", "Jedes 5-km-Feld wird mit seinen Nachbarn verglichen", "Chaque champ de 5 km comparé à ses voisins", "Ogni campo di 5 km confrontato con i vicini"],
+  "loader.fact4": ["Data from NASA MODIS, GPM IMERG, GLDAS and MERRA-2", "Дані NASA MODIS, GPM IMERG, GLDAS і MERRA-2", "Daten von NASA MODIS, GPM IMERG, GLDAS und MERRA-2", "Données NASA MODIS, GPM IMERG, GLDAS et MERRA-2", "Dati NASA MODIS, GPM IMERG, GLDAS e MERRA-2"],
+  "splash.skip": ["Skip", "Пропустити", "Überspringen", "Passer", "Salta"],
+  "coach.title": ["Quick tour", "Коротка підказка", "Kurze Tour", "Visite rapide", "Breve tour"],
+  "coach.1": ["Pick a crop", "Оберіть культуру", "Wähle eine Kultur", "Choisissez une culture", "Scegli una coltura"],
+  "coach.2": ["Click any spot", "Клацніть будь-яку точку", "Klicke auf einen Ort", "Cliquez un point", "Clicca un punto"],
+  "coach.3": ["Plan a field here", "Сплануйте поле тут", "Plane hier ein Feld", "Planifiez un champ ici", "Pianifica un campo qui"],
+  "coach.next": ["Next", "Далі", "Weiter", "Suivant", "Avanti"],
+  "coach.skip": ["Skip", "Пропустити", "Überspringen", "Passer", "Salta"],
+  "coach.done": ["Done", "Готово", "Fertig", "Terminé", "Fatto"],
+
+  // optional dark theme
+  "theme.label": ["Light / dark theme", "Світла / темна тема", "Helles / dunkles Design", "Thème clair / sombre", "Tema chiaro / scuro"],
+
   // science
   "s.title": ["The science behind it", "Наука за цим", "Die Wissenschaft dahinter", "La science derrière", "La scienza dietro"],
   "s.lead": ["Detailed pages for judges and researchers: methods, trends, model skill, the Kakhovka and Murrumbidgee comparison.", "Детальні сторінки для журі та дослідників: методи, тренди, точність моделей, порівняння Каховки та Маррамбіджі.", "Detailseiten für Jury und Forschung: Methoden, Trends, Modellgüte, Vergleich Kachowka/Murrumbidgee.", "Pages détaillées pour le jury et les chercheurs : méthodes, tendances, qualité des modèles, comparaison Kakhovka/Murrumbidgee.", "Pagine dettagliate per giuria e ricercatori: metodi, tendenze, accuratezza, confronto Kakhovka/Murrumbidgee."],
