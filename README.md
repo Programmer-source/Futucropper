@@ -43,6 +43,13 @@ In the course of creation of this project, a research paper regarding the proble
 
 ---
 
+##International work
+
+Our team consists of 3 Ukrainian students and 2 Australian ones. We wanted to emphasize on working out a solution that solves the problem for the 2 countries and once. Understanding this depends on different factors, however, we are still solving one big problem, because the Earth is our's to spare
+At first our countries’ problems looked different: in Ukraine, fields lost their water when the Kakhovka dam was destroyed; in Australia, drought cut the water farmers could use. But underneath it is the same problem: farms losing water in a warming climate. So instead of two separate projects, we built one tool that works for both, shaping a mutual future together!
+
+---
+
 ## The solution
 
 One app, three main screens, five languages (English, Ukrainian, German, French, Italian).
