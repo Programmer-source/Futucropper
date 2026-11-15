@@ -1,104 +1,159 @@
-# Follow the Gas
+# Futucropper
 
-Drought watch for irrigated farmland in southern Ukraine and Australia, built on NASA satellite data.
+Futucropper is a drought watch for irrigated farmland. We built it for two places: the Kakhovka irrigation area in southern Ukraine and the Murrumbidgee irrigation area in Australia.
 
-- `backend/`: Python **FastAPI**, reads the result files and serves them as JSON, plus the AI assistant.
-- `frontend/`: **Next.js** (React, TypeScript, Tailwind) interface in Ukrainian and English.
-- `data/`, `results/`: the files the app reads (formats in **CONTRACTS.md**). They hold **real NASA data and the
-  model team's results**, built by `pipeline/` (see below). No demo data is left.
-- `pipeline/`: NASA feature tables → model team's notebook → app files.
+For one zone at a time, it answers three questions in plain language:
 
-## Run on your computer (two terminals)
+1. How are the fields doing compared with a normal year for this month?
+2. Is drought likely in the next 1–3 months?
+3. Why? Is it the weather, a long-term trend, El Niño or the NAO, or the lost irrigation water?
 
-**1. Backend** (Python 3.11+)
+All numbers come from public NASA and NOAA data: monthly series since 2003, averaged over each zone.
+
+![Fields now page](docs/screenshot-fields-now.png)
+
+> **Current state:** the app works end to end, but it still runs on **generated demo data**. The files in `data/` and `results/` have the final formats, and every page shows a "Demo data" banner until the real pipeline output replaces them. The real Ukraine series are collected; the Australia series, NDVI and the model are not finished yet.
+
+## Why we made it
+
+In June 2023 the Kakhovka dam was destroyed and the irrigation canals in the south of Ukraine went dry. Since then, every bad field has the same question attached to it: is this the drought, the war, or the missing water? Satellite field apps show *that* a field is stressed. They don't say which of these is the cause.
+
+We wanted a tool that keeps those causes apart. The Murrumbidgee is in the project because Australian irrigators had their water cut during the Millennium Drought, and that region has 20 years of records on what happened next.
+
+## What we found so far
+
+This comes from our first pass over the southern Ukraine data, 2003–2025 (MERRA-2, GPM IMERG, GLDAS):
+
+- Air temperature rises by about **+0.9 °C per decade**.
+- Winter snow water fell by about **72%**.
+- Rainfall shows **no clear trend**. The water is not falling less, it is evaporating faster.
+- Root-zone soil moisture (10–40 cm) is down about **15%**.
+- For Ukraine, the **North Atlantic Oscillation** explains much more of the year-to-year swings than El Niño. El Niño was not significant here, but it is for Australia.
+
+These numbers will move a little once the cropland mask and the final trend tests are in. The method is described below.
+
+## How it works
+
 ```
+NASA / NOAA downloads → zone averages → statistics and model → files in data/ and results/
+                                                                         │
+                                                       FastAPI reads them (no math)
+                                                                         │
+                                                          Next.js site, UA / EN
+```
+
+We made one rule early on: **the API never calculates anything.** The pipeline writes files, and the API only reads, filters and combines them. If a number on the screen looks wrong, you can find the exact file and row it came from. It also let the people working on the statistics and the people working on the site work at the same time without blocking each other. The shared file formats are in [CONTRACTS.md](CONTRACTS.md).
+
+### Data
+
+| What | Product | From |
+|---|---|---|
+| Rainfall | GPM IMERG v07, monthly | NASA GES DISC |
+| Temperature, air dryness | MERRA-2 | NASA GMAO |
+| Soil moisture, evaporation, snow | GLDAS Noah 2.1 | NASA GES DISC |
+| Field greenness (NDVI) | MODIS MOD13A3 v061 | NASA LP DAAC, via AppEEARS |
+| Ground water storage | GRACE / GRACE-FO | NASA JPL |
+| El Niño (ONI), NAO | indices | NOAA CPC |
+
+Most of the series were pulled through NASA Giovanni. NDVI is not available in Giovanni, so it goes through AppEEARS.
+
+Zones: three in Ukraine (the main Kakhovka irrigated area, southern Dnipropetrovsk, and a rainfed control in Mykolaiv) and two in Australia (Murrumbidgee, and a rainfed control near Temora). The control zones never had canal water. If our method finds a "water loss" effect there, the method is wrong.
+
+### Statistics
+
+- **Anomalies.** Each month is compared with the same calendar month in 2003–2021, so July is compared with other Julys. Otherwise the seasons hide everything else.
+- **Trends.** We use Sen's slope with the modified Mann–Kendall test (Hamed–Rao), because monthly climate data is autocorrelated and the plain test gives too many false trends. We test many variables at once, so the p-values go through Benjamini–Hochberg correction.
+- **Labels.** "Confirmed" means it passes after the correction. "Possible" means p < 0.2 before the correction. For weak trends we also show how many more years of data are needed (Weatherhead et al., 1998).
+- **Expected vs actual.** A model trained on weather only, before June 2023, predicts what NDVI should be afterwards. The gap between that and the satellite reading is the part the weather doesn't explain.
+- **Forecast.** 1, 3 and 6 months ahead, with an 80% range. We check it on years it hasn't seen, against two simple baselines: "same as now" and "normal for the month". The 6-month forecast is hidden unless it beats both.
+- **Traffic light.** One rule everywhere: NDVI z-score above −0.5 is green, −1 to −0.5 is yellow, below −1 is red.
+
+## Running it locally
+
+You need Python 3.11+ and Node.js 20+.
+
+```bash
+# backend
 cd backend
 python -m pip install -r requirements.txt
+python mock/make_mock.py                    # demo data; skip once real files exist
 python -m uvicorn app.main:app --reload --port 8000
 ```
-Check: http://localhost:8000/api/health and http://localhost:8000/docs
 
-**2. Frontend** (Node.js 20+)
-```
+```bash
+# frontend (second terminal)
 cd frontend
 npm install
-copy .env.example .env.local       # Windows  (macOS/Linux: cp .env.example .env.local)
+cp .env.example .env.local                  # Windows: copy .env.example .env.local
 npm run dev
 ```
-Open http://localhost:3000 . Add `?lang=en` for English.
 
-## Data and models (`pipeline/`)
+Open http://localhost:3000. The interface is in Ukrainian by default; add `?lang=en` for English. The API docs are at http://localhost:8000/docs.
 
-`python pipeline/build_scenario.py` builds `results/scenario_cells.json` (NASA GLDAS 0.25° cells) for the multi-year Plan map.
+Tests: `cd backend && python -m pytest -q`
 
-Everything in `data/` and `results/` is already built, so you only need this to rebuild after new data.
-```
-python -m pip install -r pipeline/requirements.txt
-python pipeline/run_models.py       # runs forecast_pipeline.ipynb (model team) on feature_csvs/  -> model_outputs/   (~1 min)
-python pipeline/export_for_app.py   # feature_csvs/ + model_outputs/ -> data/ and results/                       (~1 min)
-python pipeline/build_pixel_maps.py # MODIS pixels -> results/pixel_maps.json (field map, planner)                 (~5 s)
-```
-| Folder / file | What it is |
+On Windows, if `uvicorn` or `streamlit` is "not recognized", run them as `python -m uvicorn ...`. The scripts folder is often not on PATH.
+
+### Settings
+
+| Variable | Default | What it does |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Where the frontend looks for the API |
+| `FTG_DATA_ROOT` | repo root | Folder with `data/` and `results/` (the prefix is left over from the old name, Follow the Gas) |
+| `CORS_ORIGINS` | `*` | Allowed frontend addresses, comma-separated |
+| `ANTHROPIC_API_KEY` | not set | Turns on the AI assistant. Without it, the assistant answers from a template built from the same numbers |
+| `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model used by the assistant |
+
+The assistant only gets the zone's computed results as context, not the open internet, and it has to cite the field behind each claim, for example `[trends temp]`.
+
+### Main endpoints
+
+| Endpoint | Returns |
 |---|---|
-| `pipeline/feature_csvs/` | 15 tables from NASA MODIS, GPM IMERG, GLDAS, MERRA-2 (+ NOAA indices and gases, World Bank yields), 5 zones, 2003 to Nov 2026 |
-| `pipeline/forecast_pipeline.ipynb`, `model_report_uk.pdf` | Model team's notebook and report (unchanged) |
-| `pipeline/model_outputs/` | Notebook outputs. `run_models.py` reproduces them exactly (checked: max difference 1e-16) |
-| `pipeline/export_for_app.py` | Converts to the app formats. It also recomputes, with the notebook's own model settings, three things the notebook does not save: per-zone test accuracy, the weather-only "expected" line for 2003–2021 (out-of-sample), and which factor the 1-month forecast relies on most. It stops if it cannot reproduce the notebook's own numbers. |
+| `GET /api/zones/{zone}/now` | Traffic light, forecast, "why", tips, recent weather alerts |
+| `GET /api/trends?zone=` | Trend table with corrected p-values |
+| `GET /api/zones/{zone}/expected` | Expected vs actual NDVI |
+| `GET /api/chain` | Lags between heat, rain, soil and NDVI |
+| `GET /api/compare` | Ukraine vs Australia |
+| `POST /api/assistant` | An answer to a question about a zone |
+| `GET /api/download/{name}.csv` | Any result file as CSV |
 
-Where the app's numbers come from: forecast and drought light (models 01 and 02), trends (06), drought chain (07),
-expected vs actual (04), 8-day dry-spell forecast (08) — model team; Ukraine vs Australia summary — `export_for_app.py`,
-from the expected-vs-actual results (definitions are in the `definition` column of `results/summary.csv`).
+The full list is at `/docs`. If a result file is missing, the endpoint returns an empty result and the page says "not published yet". It doesn't crash.
 
-**Data dates.** Field greenness and soil moisture end in December 2025 (latest NASA monthly files when the data was
-pulled), so forecasts start from that month. Rainfall is daily to 13 Nov 2026, temperature to 30 Sep 2026.
-To move the forecast forward, pull the newer monthly NASA files, rebuild `feature_csvs/` with the same method, then
-run the two commands above.
+## Repository
 
-`backend/mock/make_mock.py` still exists for testing on a copy, but it refuses to run without `--force` because it would
-overwrite the real data.
-
-## AI (works without any key)
-
-There is no model picker. `frontend/src/lib/llm.ts` → `askAI()` tries, in order:
-1. Claude through the backend, only if `ANTHROPIC_API_KEY` is set;
-2. the free Pollinations model from the browser (`POST /openai` with `private:true`, then `GET`); when the free tier
-   says "1 reply every 45 seconds per IP" (HTTP 402/429) it waits the seconds it asks for and retries;
-3. the backend proxy `POST /api/llm`, a server-side request with no browser Origin, for when the browser is blocked (HTTP 403).
-Requests are queued one at a time. The prompt contains only the numbers on the page (`planner.plan_messages`, `spot_messages`).
-
-## Pages
-
-- **Map** (`/`, opens first): one map per country. Colour = land score for the chosen crop (MODIS 5 km), box labels = best
-  sowing month and weather-safety score per zone, outline colour = field state now. Click any spot → facts (`/api/spot`),
-  "Ask AI about this spot", "Plan a field here".
-- **Plan** (`/plan`): 7 steps (place, crop, any of 12 months, soil/irrigation/size in ha/acres/sotka/m²/km², optional
-  N/fertiliser/tillage/diesel/rice water, notes, horizon 8 days…10 years) → **Calculate** → score with reasons, month bars,
-  outlook, AI analysis, seed amount and rows with the field drawn to scale, soil water (FAO-56), national cereal yield,
-  greenhouse gases (IPCC 2019 Tier 1 + AR6 GWP) with "Try it" cuts that recalculate, and for 1–10 years an animated
-  "if the 2003–2025 trend continues" map (NASA GLDAS cells) with a flag and an AI tip per season.
-- **Science** (`/science`): the detailed pages (now, compare, trends, chain, expected vs actual, dashboard, assistant, expert, roadmap).
-
-Languages: English (default), Ukrainian, German, French, Italian (selector top right; `?lang=de` works too).
-
-## Deploy
-- **Backend → Render** (free web service): root `backend`, build `pip install -r requirements.txt`,
-  start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set `CORS_ORIGINS=https://<your-site>.vercel.app`
-  and optionally `ANTHROPIC_API_KEY`. Commit `data/` and `results/` so the server has them.
-- **Frontend → Vercel**: import the repo, root directory `frontend`, env `NEXT_PUBLIC_API_URL=https://<your-api>.onrender.com`.
-
-## Structure
 ```
-backend/app/store.py      reads contract files (cached; missing file -> None)
-backend/app/logic.py      traffic light, "why", tips, comparison  (thresholds live here only)
-backend/app/assistant.py  Claude API call with results-only context
-backend/app/main.py       API routes
-frontend/src/i18n/*.json  every visible word, Ukrainian and English
-frontend/src/app/*        pages;  frontend/src/components/*  field strip, map, charts
+backend/app/       API: main.py (routes), store.py (file reading), logic.py (traffic light, tips),
+                   assistant.py
+backend/mock/      demo data generator
+frontend/src/      Next.js pages, components, i18n/uk.json + en.json (all visible text lives here)
+data/, results/    pipeline output (demo for now)
+analysis.py        statistics for the real Ukraine dataset (prototype from the Streamlit version)
+CONTRACTS.md       file formats
 ```
 
-## Not done yet
-- NASA monthly data for 2026 (greenness, soil moisture), so the forecast starts from the latest month.
-- Any region (draw your own area), automatic 8-day updates, Telegram/phone push, cropland mask: see the Roadmap page.
-- "Learning from each other" text (Australian part of the team).
-- Roadmap: draw your own area, multi-region dashboard, push/Telegram alerts, automatic 8-day updates
-  (planned as a scheduled GitHub Action that rebuilds `results/`).
+## What it can't do
+
+- **It can't prove causes.** When two series move together, that doesn't mean one causes the other. The control zones help, but they are not an experiment.
+- **No cropland mask yet.** Zone averages include villages, roads and pasture, not only fields.
+- **It works at area level, not field level.** Some products have 25–50 km cells, so this is not a precision-farming app and doesn't try to be one.
+- **The data lags.** Monthly products arrive 1–2 months late, and the newest rainfall values are early estimates.
+- **The war affects NDVI directly.** Mined, shelled and abandoned fields lose greenness whatever the weather. We can't fully separate that from water loss.
+- **About 23 years is a short record** for confirming slow trends.
+
+## Next
+
+The work in order: put the real data in place of the demo files, then the Australia series, the NDVI cropland mask, and the model. After that: a month slider to replay any month since 2003, and a Telegram message when a zone's traffic light changes.
+
+## Team
+
+<!-- Fill in before publishing: names and who did what -->
+
+## License
+
+<!-- Not chosen yet. Add a LICENSE file (for example MIT) before the repo goes public. -->
+NASA and NOAA data are used under their open data policies.
+
+## Thanks
+
+NASA GES DISC, LP DAAC and JPL for the data, and the Giovanni and AppEEARS teams for tools that let students get it without writing a downloader. NOAA CPC for the ONI and NAO indices. Map outlines come from Natural Earth.
