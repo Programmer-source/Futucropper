@@ -36,6 +36,13 @@ On top of that, farming adds to the problem: nitrogen fertiliser, diesel and flo
 
 ---
 
+##Research
+
+In the course of creation of this project, a research paper regarding the problem and its releativity was written. Exploring the current consequences and possible solutions:
+[Research report](docs/Futucropper_Evidence_and_Impact_Research_Report.pdf)
+
+---
+
 ## The solution
 
 One app, three main screens, five languages (English, Ukrainian, German, French, Italian).
